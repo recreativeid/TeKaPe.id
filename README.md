@@ -1,54 +1,113 @@
-# CodeIgniter 4 Framework
+# TeKaPe.id — Tempa Karakteristik & Pengetahuan
 
-## What is CodeIgniter?
+![TeKaPe.id Banner](https://raw.githubusercontent.com/recreativeid/TeKaPe.id/main/public/favicon.ico)
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+> **Platform Bimbingan Belajar & Try Out Online Modern (TWK, TIU, TKP Kedinasan & CPNS)**  
+> Dibangun dengan arsitektur bersih, mobile-first & responsive desktop SaaS, didukung framework **CodeIgniter 4** dan database **MySQL**.
 
-This repository holds the distributable version of the framework.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+---
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## 🌟 Tentang TeKaPe.id
 
-The user guide corresponding to the latest version of the framework can be found
-[here](https://codeigniter4.github.io/userguide/).
+**TeKaPe.id** adalah aplikasi web edukasional modern berkonsep *clean educational SaaS* yang memfasilitasi persiapan tes seleksi CPNS dan Sekolah Kedinasan di Indonesia. Aplikasi ini mendukung **3 role pengguna utama**:
+1. **Admin**: Mengelola bank soal, master data siswa, jadwal sesi bimbingan belajar, dan konfigurasi platform.
+2. **Guru / Tentor**: Mengakses ruang kerja (*workspace*) khusus penyusunan paket soal Free & Premium dengan sistem keamanan verifikasi password berlapis.
+3. **Murid / Siswa**: Mengerjakan try out Computer-Based Test (CBT), memantau grafik tren performa nilai secara visual, dan mengakses jadwal bimbingan belajar online.
 
-## Important Change with index.php
+---
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+## 🚀 Fitur Unggulan
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+- 🛡️ **Otentikasi 3 Role Terintegrasi**: Login terpisah untuk Admin, Tentor, dan Murid dengan opsi pemulihan via WhatsApp resmi.
+- 🔒 **Proteksi Verifikasi Password Lapis Kedua**: Keamanan ekstra saat Admin atau Tentor membuka menu *Kelola Soal*.
+- 📝 **Modul Kelola Soal Lengkap**:
+  - Pilihan paket soal **Free** (Akses Terbuka) dan **Premium** (Berlangganan).
+  - Manajemen kategori soal TWK (Tes Wawasan Kebangsaan), TIU (Tes Inteligensia Umum), dan TKP (Tes Karakteristik Pribadi).
+  - Formula penilaian dinamis (sistem poin pilihan ganda & isian).
+- 📊 **Dashboard Interaktif & Visualisasi**:
+  - Grafik tren nilai try out interaktif berbasis Canvas native API.
+  - Ringkasan statistik cepat dan kartu sesi bimbingan hari ini.
+- ⏱️ **CBT Exam Engine**: Ujian try out online dengan *real-time countdown timer*, navigasi soal, dan kalkulasi skor otomatis.
+- 📱💻 **Desain Responsif Adaptif**: Tampilan mobile-first yang nyaman dengan *bottom navigation bar*, serta adaptasi otomatis ke tata letak desktop multi-kolom (*top navigation bar*).
 
-**Please** read the user guide for a better explanation of how CI4 works!
+---
 
-## Repository Management
+## 🛠️ Tech Stack
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+- **Backend Framework**: CodeIgniter 4 (PHP 8+)
+- **Database**: MySQL / MariaDB (XAMPP)
+- **Frontend**: HTML5, Vanilla CSS3 (Design Tokens System), Vanilla JavaScript (Canvas API)
+- **Styling Palette**: Dark Navy (`#16192E`), Warm Cream (`#F7F4EE`), Warm Amber (`#C47426`), Soft Sage Green (`#E4EFE3`)
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+---
 
-## Contributing
+## 💻 Panduan Instalasi Lokal
 
-We welcome contributions from the community.
+### Prasyarat
+- **XAMPP** dengan PHP versi 7.4 atau 8.0+
+- **MySQL / MariaDB** aktif di XAMPP
 
-Please read the [*Contributing to CodeIgniter*](https://github.com/codeigniter4/CodeIgniter4/blob/develop/CONTRIBUTING.md) section in the development repository.
+### Langkah Instalasi
 
-## Server Requirements
+1. **Clone Repositori**:
+   ```bash
+   git clone https://github.com/recreativeid/TeKaPe.id.git
+   cd TeKaPe.id
+   ```
 
-PHP version 7.4 or higher is required, with the following extensions installed:
+2. **Konfigurasi Database MySQL**:
+   - Buka XAMPP Control Panel dan pastikan service **MySQL** serta **Apache** aktif.
+   - Buat database baru bernama `tekape_db` melalui phpMyAdmin atau terminal MySQL:
+     ```sql
+     CREATE DATABASE tekape_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+     ```
+   - Import skema awal dari file dump yang telah disediakan:
+     ```bash
+     mysql -u root -p tekape_db < tekape_db.sql
+     ```
+   - Sesuaikan konfigurasi port dan kredensial database pada file `.env`:
+     ```ini
+     database.default.hostname = localhost
+     database.default.database = tekape_db
+     database.default.username = root
+     database.default.password = ''
+     database.default.DBDriver = MySQLi
+     database.default.port = 3306  # atau 3307 jika menggunakan port kustom XAMPP
+     ```
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+3. **Jalankan Migrasi & Seeder (Alternatif jika tidak import SQL)**:
+   ```bash
+   php spark migrate
+   php spark db:seed TeKaPeSeeder
+   ```
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+4. **Jalankan Server Lokal**:
+   ```bash
+   php spark serve --port 8080
+   ```
+   Buka peramban Anda di: **`http://localhost:8080`**
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+---
+
+## 🔑 Akun Default untuk Pengujian
+
+| Role | Username | Password | Keterangan |
+|---|---|---|---|
+| **Admin** | `admin` | `admin123` | Password proteksi kelola soal: `admin123` |
+| **Tentor** | `tentor` | `tentor123` | Password proteksi kelola soal: `tentor123` |
+| **Murid** | `simon` | `murid123` | Akun siswa dengan riwayat try out & status premium |
+
+---
+
+## ℹ️ Catatan Mengenai GitHub Pages
+
+> **PENTING**: **GitHub Pages adalah layanan hosting situs web statis (HTML/CSS/JS)**.  
+> GitHub Pages **tidak mendukung eksekusi backend PHP ataupun database MySQL**, sehingga aplikasi penuh CodeIgniter tidak dapat berjalan langsung di `username.github.io`.  
+> Untuk mendeploy aplikasi ini secara live di internet:
+> 1. Gunakan web hosting berbasis PHP/MySQL seperti **cPanel Hosting** (Niagahoster, DomaiNesia, IDCloudHost, Hostinger).
+> 2. Atau platform cloud seperti **Railway / Render / Fly.io** menggunakan konfigurasi Docker PHP + MySQL.
+
+---
+
+## 📄 Lisensi
+Hak Cipta © 2026 TeKaPe.id. Dikelola oleh [recreativeid](https://github.com/recreativeid).
