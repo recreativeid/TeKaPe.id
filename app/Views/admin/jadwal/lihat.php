@@ -37,7 +37,7 @@
   <?php if (!empty($tentors)): ?>
     <div style="display: flex; align-items: center; gap: 8px;">
       <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Filter Guru:</span>
-      <select onchange="location.href='<?= base_url("admin/jadwal/lihat?day={$selectedDay}&subject={$filterSubj}") ?>&tentor_id=' + this.value" class="form-control" style="height: 34px; font-size: 12px; max-width: 250px;">
+      <select onchange="location.href='<?= base_url("admin/jadwal/lihat?day={$selectedDay}&subject={$filterSubj}") ?>&tentor_id=' + this.value" class="form-control filter-guru-select" style="max-width: 250px;">
         <option value="">-- Semua Guru / Tentor --</option>
         <?php foreach ($tentors as $t): ?>
           <option value="<?= $t['id'] ?>" <?= (($selectedTentorId ?? null) == $t['id']) ? 'selected' : '' ?>>

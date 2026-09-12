@@ -93,7 +93,16 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
         $routes->post('nilai/update', 'Admin\Murid::updateNilai');
         $routes->get('absensi', 'Admin\Murid::absensi');
         $routes->post('absensi/save', 'Admin\Murid::saveAbsensi');
-        $routes->get('login-siswa', 'Admin\Murid::loginSiswa');
+        $routes->get('akun-siswa', 'Admin\Murid::akunSiswa');
+        $routes->get('akunSiswa', 'Admin\Murid::akunSiswa');
+        $routes->get('login-siswa', 'Admin\Murid::akunSiswa');
+        $routes->get('loginSiswa', 'Admin\Murid::akunSiswa');
+        $routes->post('createStudent', 'Admin\Murid::createStudent');
+        $routes->post('create-student', 'Admin\Murid::createStudent');
+        $routes->post('updateStudentUsername/(:num)', 'Admin\Murid::updateStudentUsername/$1');
+        $routes->post('update-student-username/(:num)', 'Admin\Murid::updateStudentUsername/$1');
+        $routes->post('resetStudentPassword/(:num)', 'Admin\Murid::resetStudentPassword/$1');
+        $routes->post('reset-student-password/(:num)', 'Admin\Murid::resetStudentPassword/$1');
         $routes->post('login-siswa/update', 'Admin\Murid::updateLoginSiswa');
         $routes->post('login-siswa/reset-password', 'Admin\Murid::resetPassword');
         $routes->post('toggle-status/(:num)', 'Admin\Murid::toggleStatus/$1');

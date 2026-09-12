@@ -100,52 +100,50 @@
           </select>
         </div>
 
-        <!-- 2. Narasi Soal -->
+        <!-- 2. Narasi Soal (1-Line Auto Expand) -->
         <div class="form-group">
-          <label class="form-label">2. Narasi Soal</label>
-          <textarea id="editor-narrative" class="form-control" rows="3" placeholder="Ketik narasi pertanyaan lengkap..."></textarea>
+          <label class="form-label" style="font-size: 11px;">2. Narasi Soal (1 Baris Awal, Auto-Expand)</label>
+          <textarea id="editor-narrative" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Ketik narasi pertanyaan soal..."></textarea>
         </div>
 
         <!-- Upload Gambar Soal -->
         <div class="form-group">
-          <label class="form-label">Upload Gambar Soal (Opsional)</label>
-          <input type="file" id="editor-image-file" accept="image/*" class="form-control" style="padding: 6px;" onchange="previewEditorImage(this)">
-          <div id="editor-image-preview-wrapper" style="display: none; margin-top: 6px; align-items: center; gap: 8px;">
-            <img id="editor-img-preview" src="" style="max-height: 100px; max-width: 100%; border-radius: 4px; border: 1px solid var(--border-color);">
-            <button type="button" onclick="removeEditorImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 28px; font-size: 11px;">Hapus Gambar</button>
+          <label class="form-label" style="font-size: 11px;">Upload Gambar Soal (Opsional)</label>
+          <input type="file" id="editor-image-file" accept="image/*" class="form-control" style="height: 38px; padding: 6px 10px; font-size: 12px;" onchange="previewEditorImage(this)">
+          <div id="editor-image-preview-wrapper" style="display: none; margin-top: 4px; align-items: center; gap: 8px;">
+            <img id="editor-img-preview" src="" style="max-height: 60px; max-width: 100%; border-radius: 4px; border: 1px solid var(--border-color);">
+            <button type="button" onclick="removeEditorImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 26px; font-size: 10px;">Hapus Gambar</button>
           </div>
         </div>
 
         <!-- 3. Pilihan Ganda / Isian Section -->
-        <div id="pg-options-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
-          <label class="form-label" style="margin-bottom: 2px;">3. Pilihan Jawaban (Tentukan Skor Tiap Opsi & Kunci Jawaban):</label>
-          <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Pilih radio button untuk jawaban benar. Tentukan skor untuk masing-masing opsi (misal TKP skala 1-5, TWK/TIU 5 & 0).</p>
-
+        <div id="pg-options-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+          <label class="form-label" style="font-size: 11px; margin-bottom: 2px;">3. Pilihan Jawaban (Pilih radio untuk kunci benar):</label>
           <?php foreach (['A', 'B', 'C', 'D', 'E'] as $opt): ?>
-            <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-              <input type="radio" name="correct_opt_temp" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Pilih sebagai Kunci Jawaban Benar">
-              <span style="font-weight: 700; font-size: 13px; width: 16px;"><?= $opt ?></span>
-              <input type="text" id="opt-text-<?= $opt ?>" class="form-control" style="height: 36px; font-size: 12px;" placeholder="Teks opsi <?= $opt ?>">
-              <input type="number" id="opt-score-<?= $opt ?>" class="form-control" style="height: 36px; width: 68px; font-size: 12px; text-align: center;" value="<?= $opt === 'A' ? '5' : '0' ?>" placeholder="Skor" title="Skor opsi ini">
+            <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; padding: 4px 8px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+              <input type="radio" name="correct_opt_temp" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Kunci Benar" style="accent-color: var(--dark-navy);">
+              <span style="font-weight: 700; font-size: 12px; width: 14px;"><?= $opt ?></span>
+              <textarea id="opt-text-<?= $opt ?>" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" style="flex: 1;" placeholder="Teks opsi <?= $opt ?>"></textarea>
+              <input type="number" id="opt-score-<?= $opt ?>" class="form-control" style="height: 38px; width: 54px; font-size: 11px; text-align: center; padding: 4px;" value="<?= $opt === 'A' ? '5' : '0' ?>" placeholder="Skor" title="Skor opsi">
             </div>
           <?php endforeach; ?>
         </div>
 
         <!-- Isian Singkat Section -->
-        <div id="isian-wrapper" style="display: none; flex-direction: column; gap: 8px;">
+        <div id="isian-wrapper" style="display: none; flex-direction: column; gap: 6px;">
           <div class="form-group">
-            <label class="form-label">3. Kunci Jawaban Isian</label>
-            <input type="text" id="editor-expected" class="form-control" placeholder="Jawaban yang diharapkan">
+            <label class="form-label" style="font-size: 11px;">3. Kunci Jawaban Isian</label>
+            <input type="text" id="editor-expected" class="form-control" style="height: 38px; font-size: 13px;" placeholder="Jawaban yang diharapkan">
           </div>
         </div>
 
         <!-- 4. Pembahasan Lengkap -->
         <div class="form-group">
-          <label class="form-label">4. Pembahasan Lengkap</label>
-          <textarea id="editor-discussion" class="form-control" rows="2" placeholder="Tuliskan analisis, trik, atau kunci pembahasan..."></textarea>
+          <label class="form-label" style="font-size: 11px;">4. Pembahasan Lengkap</label>
+          <textarea id="editor-discussion" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Tuliskan analisis, trik, atau kunci pembahasan (opsional)..."></textarea>
         </div>
 
-        <button type="button" id="btn-submit-q" class="btn btn-primary btn-sm" onclick="saveQuestionToList()" style="height: 40px; font-size: 13px;">
+        <button type="button" id="btn-submit-q" class="btn btn-primary btn-sm" onclick="saveQuestionToList()" style="height: 38px; font-size: 13px;">
           + Masukkan ke Daftar Soal
         </button>
       </div>
@@ -195,9 +193,25 @@
 let questionsData = [];
 let currentBase64Image = null;
 
+function autoExpand(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  const newH = Math.max(38, el.scrollHeight);
+  el.style.height = newH + 'px';
+}
+
+function resetAllAutoExpands() {
+  document.querySelectorAll('.form-control-auto').forEach(el => {
+    autoExpand(el);
+  });
+}
+
 function toggleEditor() {
   const card = document.getElementById('question-editor-card');
   card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'flex' : 'none';
+  if (card.style.display === 'flex') {
+    setTimeout(resetAllAutoExpands, 50);
+  }
 }
 
 function openNewEditor() {
@@ -207,6 +221,7 @@ function openNewEditor() {
   resetEditorInputs();
   const card = document.getElementById('question-editor-card');
   card.style.display = 'flex';
+  setTimeout(resetAllAutoExpands, 50);
 }
 
 function toggleQuestionTypeFields() {
@@ -221,6 +236,7 @@ function toggleQuestionTypeFields() {
     pgWrapper.style.display = 'flex';
     isianWrapper.style.display = 'none';
   }
+  setTimeout(resetAllAutoExpands, 50);
 }
 
 function previewEditorImage(input) {
@@ -373,26 +389,32 @@ function renderQuestionsList() {
     return;
   }
 
-  let html = '';
-  questionsData.forEach((q, idx) => {
-    counts[q.category] = (counts[q.category] || 0) + 1;
+    let kunci = '-';
+    if (q.type === 'pilihan_ganda' && q.options) {
+      const correct = q.options.find(o => o.is_correct);
+      if (correct) kunci = correct.label;
+    } else if (q.type === 'isian') {
+      kunci = q.expected_answer || '-';
+    }
+
     html += `
-      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
-        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+      <div class="q-card-compact">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
           <div style="display: flex; align-items: center; gap: 6px;">
-            <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy);">#${idx + 1}</span>
+            <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy); background: #F1F5F9; padding: 2px 7px; border-radius: 4px;">#${idx + 1}</span>
             <span class="badge badge-navy" style="font-size: 10px;">${q.category}</span>
-            <span style="font-size: 11px; color: var(--text-muted);">${q.type === 'pilihan_ganda' ? 'Pilihan Ganda' : 'Isian'}</span>
+            <span class="badge badge-light" style="font-size: 10px; border: 1px solid var(--border-color);">${q.type === 'pilihan_ganda' ? 'PG' : 'Isian'}</span>
+            <span class="badge badge-sage" style="font-size: 10px;">Kunci: ${kunci}</span>
           </div>
-          <div style="display: flex; gap: 8px;">
-            <button type="button" onclick="editDraftQuestion(${idx})" style="background: none; border: none; color: var(--dark-navy); cursor: pointer; font-size: 11px; font-weight: 700;">Edit</button>
-            <button type="button" onclick="removeQuestion(${idx})" style="background: none; border: none; color: #DC2626; cursor: pointer; font-size: 11px; font-weight: 700;">Hapus</button>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="editDraftQuestion(${idx})" style="height: 26px; font-size: 10px; padding: 0 8px; font-weight: 700;">✏️ Edit</button>
+            <button type="button" onclick="removeQuestion(${idx})" style="background: none; border: none; color: #DC2626; cursor: pointer; font-size: 12px; font-weight: 700; padding: 2px 6px;" title="Hapus">🗑️</button>
           </div>
         </div>
-        <p style="font-size: 12px; color: var(--dark-navy); margin: 0; line-height: 1.45;">
+        <div style="font-size: 12px; color: var(--dark-navy); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
           ${q.narrative}
-        </p>
-        ${q.image_url ? `<img src="${q.image_url}" style="max-height: 80px; max-width: 140px; border-radius: 4px; border: 1px solid var(--border-light); object-fit: contain;">` : ''}
+        </div>
+        ${q.image_url ? `<img src="${q.image_url}" style="max-height: 50px; max-width: 100px; border-radius: 4px; border: 1px solid var(--border-light); object-fit: contain;">` : ''}
       </div>
     `;
   });

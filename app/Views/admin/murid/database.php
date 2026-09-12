@@ -32,7 +32,7 @@
     <?php if (!empty($tentors)): ?>
       <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 8px;">
         <span style="font-size: 11px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
-        <select onchange="location.href='<?= base_url('admin/murid/database?filter=' . esc($filter) . ($search ? '&q=' . esc($search) : '')) ?>&tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px;">
+        <select onchange="location.href='<?= base_url('admin/murid/database?filter=' . esc($filter) . ($search ? '&q=' . esc($search) : '')) ?>&tentor_id=' + this.value" class="form-control filter-guru-select">
           <option value="">-- Semua Guru / Tentor --</option>
           <?php foreach ($tentors as $t): ?>
             <option value="<?= $t['id'] ?>" <?= ($selectedTentorId == $t['id']) ? 'selected' : '' ?>>

@@ -68,251 +68,212 @@
   <?php else: ?>
     <!-- SELECTED PACKAGE EDIT WORKSPACE -->
     
-    <!-- 1. Top Package Information -->
-    <div class="card" style="padding: 18px; border-color: #FDE68A;">
-      <div style="display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span class="badge badge-amber">Paket Premium #<?= $selectedPackage['id'] ?></span>
-          <span style="font-size: 12px; color: var(--text-muted);">Dibuat oleh: <strong><?= esc($selectedPackage['author_name'] ?? 'Admin') ?></strong></span>
+    <!-- Compact Package Header Strip (No Redundant Form) -->
+    <div class="card" style="padding: 14px 16px; background: #FFFFFF; border-left: 4px solid var(--warm-amber); border-color: #FDE68A;">
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span class="badge badge-amber" style="font-size: 10px;">Paket Premium #<?= $selectedPackage['id'] ?></span>
+            <span class="badge <?= $selectedPackage['status'] === 'active' ? 'badge-sage' : 'badge-peach' ?>" style="font-size: 10px;">
+              <?= $selectedPackage['status'] === 'active' ? 'Aktif' : 'Draft' ?>
+            </span>
+            <span class="badge badge-navy" style="font-size: 10px;">
+              <?= count($selectedPackage['questions'] ?? []) ?> Soal
+            </span>
+            <span style="font-size: 11px; color: var(--text-muted);">
+              Durasi: <strong><?= esc($selectedPackage['duration_days'] ?? 100) ?> Menit</strong> • Tentor: <strong><?= esc($selectedPackage['author_name'] ?? 'Admin') ?></strong>
+            </span>
+          </div>
+          <h2 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+            <?= esc($selectedPackage['title']) ?>
+          </h2>
+          <?php if (!empty($selectedPackage['description'])): ?>
+            <p style="font-size: 12px; color: var(--text-muted); margin: 0; line-height: 1.4;">
+              <?= esc($selectedPackage['description']) ?>
+            </p>
+          <?php endif; ?>
         </div>
-        <div style="display: flex; gap: 8px;">
-          <a href="<?= base_url("{$rolePrefix}/soal/premium/edit") ?>" style="font-size: 12px; color: var(--text-muted); text-decoration: none;">
+
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="togglePackageDetails()" style="font-size: 11px; height: 32px; padding: 0 10px;">
+            ⚙️ Edit Info Paket
+          </button>
+          <a href="<?= base_url("{$rolePrefix}/soal/premium/edit") ?>" class="btn btn-secondary btn-sm" style="font-size: 11px; height: 32px; padding: 0 10px;">
             Ganti Paket
           </a>
-          <span style="color: var(--border-color);">|</span>
-          <a href="<?= base_url("{$rolePrefix}/soal/delete-package/{$selectedPackage['id']}") ?>" onclick="return confirm('PERINGATAN: Menghapus paket ini akan menghapus seluruh butir soal dan kategorinya. Lanjutkan?')" style="font-size: 12px; color: #DC2626; text-decoration: none; font-weight: 700;">
-            Hapus Paket
+          <a href="<?= base_url("{$rolePrefix}/soal/delete-package/{$selectedPackage['id']}") ?>" onclick="return confirm('PERINGATAN: Menghapus paket ini akan menghapus seluruh butir soal. Lanjutkan?')" class="btn btn-outline-danger btn-sm" style="font-size: 11px; height: 32px; padding: 0 10px; color: #DC2626; border-color: #FCA5A5;">
+            Hapus
           </a>
         </div>
       </div>
 
-      <form action="<?= base_url("{$rolePrefix}/soal/update-package/{$selectedPackage['id']}") ?>" method="post" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
-        <?= csrf_field() ?>
-        
-        <div class="form-group">
-          <label class="form-label">Nama Paket Soal</label>
-          <input type="text" name="title" class="form-control" value="<?= esc($selectedPackage['title']) ?>" required>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Deskripsi</label>
-          <textarea name="description" class="form-control" rows="2"><?= esc($selectedPackage['description']) ?></textarea>
-        </div>
-
-        <!-- All-Access Subscription Model Notice -->
-        <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 8px; display: flex; gap: 10px; align-items: flex-start;">
-          <div style="color: var(--warm-amber); font-size: 18px; line-height: 1;">⭐</div>
-          <div style="font-size: 12px; color: #92400E; line-height: 1.5;">
-            <strong>Model All-Access Try Out Kedinasan:</strong> Paket soal premium ini tidak dijual secara eceran per paket. Seluruh murid yang berstatus <strong>Member Premium Aktif</strong> dapat langsung mengerjakan paket ini secara penuh.
+      <!-- Collapsible Package Edit Form (Only opens on explicit click) -->
+      <div id="package-details-collapse" style="display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--border-color);">
+        <form action="<?= base_url("{$rolePrefix}/soal/update-package/{$selectedPackage['id']}") ?>" method="post" style="display: flex; flex-direction: column; gap: 10px;">
+          <?= csrf_field() ?>
+          <input type="hidden" name="price" value="0">
+          <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label class="form-label" style="font-size: 11px;">Nama Paket Soal</label>
+              <input type="text" name="title" class="form-control" value="<?= esc($selectedPackage['title']) ?>" style="height: 38px; font-size: 13px;" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 11px;">Durasi (Menit)</label>
+              <input type="number" name="duration_days" class="form-control" value="<?= esc($selectedPackage['duration_days'] ?? 100) ?>" style="height: 38px; font-size: 13px;" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label" style="font-size: 11px;">Status</label>
+              <select name="status" class="form-control filter-guru-select" style="height: 38px;">
+                <option value="active" <?= $selectedPackage['status'] === 'active' ? 'selected' : '' ?>>Aktif</option>
+                <option value="draft" <?= $selectedPackage['status'] === 'draft' ? 'selected' : '' ?>>Draft</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <input type="hidden" name="price" value="0">
-        <div class="form-group">
-          <label class="form-label">Durasi Ujian Simulasi CAT (Menit)</label>
-          <input type="number" name="duration_days" class="form-control" value="<?= esc($selectedPackage['duration_days'] ?? 100) ?>" placeholder="100 menit standar CAT BKN" required>
-          <small style="font-size: 11px; color: var(--text-muted);">Alokasi waktu simulasi CAT (standar SKD Kedinasan: 100 menit).</small>
-        </div>
-
-        <div style="display: flex; gap: 10px; align-items: center;">
-          <div class="form-group" style="flex: 1;">
-            <label class="form-label">Status</label>
-            <select name="status" class="form-control">
-              <option value="active" <?= $selectedPackage['status'] === 'active' ? 'selected' : '' ?>>Aktif (Dapat diakses murid Premium)</option>
-              <option value="draft" <?= $selectedPackage['status'] === 'draft' ? 'selected' : '' ?>>Draft (Disimpan sementara)</option>
-            </select>
+          <div class="form-group">
+            <label class="form-label" style="font-size: 11px;">Deskripsi</label>
+            <input type="text" name="description" class="form-control" value="<?= esc($selectedPackage['description']) ?>" style="height: 38px; font-size: 13px;">
           </div>
-          <div style="flex: 1; margin-top: 20px;">
-            <button type="submit" class="btn btn-secondary" style="height: 48px; font-size: 13px;">
-              Simpan Informasi Paket
-            </button>
+          <div style="display: flex; justify-content: flex-end; gap: 8px;">
+            <button type="button" class="btn btn-secondary btn-sm" onclick="togglePackageDetails()" style="font-size: 11px;">Batal</button>
+            <button type="submit" class="btn btn-primary btn-sm" style="font-size: 11px;">Simpan Perubahan Info</button>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
 
-    <!-- 2. Section Kelola Kategori Paket (TWK, TIU, TKP) -->
-    <div class="card" style="padding: 18px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-        <div>
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: var(--dark-navy);">
-            Kelola Kategori Paket
-          </h2>
-          <span style="font-size: 12px; color: var(--text-muted);">
-            Kategori soal aktif (TWK, TIU, TKP, dsb)
-          </span>
-        </div>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="openModal('add-cat-modal')" style="font-weight: 700;">
-          + Tambah Kategori
-        </button>
-      </div>
-
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
+    <!-- Compact Categories Pill Bar -->
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: #FFFDF5; padding: 8px 12px; border-radius: var(--radius-sm); border: 1px solid #FDE68A;">
+      <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--dark-navy);">Kategori:</span>
         <?php if (!empty($selectedPackage['categories'])): ?>
           <?php foreach ($selectedPackage['categories'] as $cat): ?>
-            <?php 
-              $qInCat = 0;
-              if (!empty($selectedPackage['questions'])) {
-                foreach ($selectedPackage['questions'] as $qItem) {
-                  if (($qItem['category_id'] ?? 0) == $cat['id']) $qInCat++;
-                }
-              }
-            ?>
-            <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span class="badge badge-amber" style="font-size: 11px;"><?= esc($cat['code']) ?></span>
-                <div>
-                  <strong style="font-size: 13px; color: var(--dark-navy);"><?= esc($cat['name']) ?></strong>
-                  <span style="font-size: 11px; color: var(--text-muted); display: block;">
-                    <?= $qInCat ?> Soal • Aturan: <?= esc($cat['scoring_rule'] ?? 'Standard') ?>
-                  </span>
-                </div>
-              </div>
-              <div style="display: flex; align-items: center; gap: 8px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick='openEditCatModal(<?= json_encode($cat) ?>)' style="height: 28px; font-size: 11px;">
-                  Rename / Edit
-                </button>
-                <a href="<?= base_url("{$rolePrefix}/soal/delete-category/{$cat['id']}") ?>" onclick="return confirm('Hapus kategori <?= esc($cat['code']) ?>?')" style="font-size: 11px; color: #DC2626; font-weight: 700; text-decoration: none; padding: 4px;">
-                  Hapus
-                </a>
-              </div>
-            </div>
+            <span class="badge badge-amber" style="font-size: 10px; cursor: pointer;" onclick='openEditCatModal(<?= json_encode($cat) ?>)' title="Klik untuk rename/atur kategori">
+              <?= esc($cat['code']) ?> (<?= esc($cat['name']) ?>) ✏️
+            </span>
           <?php endforeach; ?>
         <?php endif; ?>
       </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openModal('add-cat-modal')" style="font-size: 11px; height: 28px; padding: 0 8px;">
+        + Tambah Kategori
+      </button>
     </div>
 
-    <!-- 3. Question Management Section -->
-    <div class="card" style="padding: 18px;">
+    <!-- 3. Question Management Section (Front & Center) -->
+    <div class="card" style="padding: 16px;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
         <div>
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: var(--dark-navy);">
-            Daftar Butir Soal Premium
+          <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+            Daftar Butir Soal Premium (<span id="count-soal-header"><?= count($selectedPackage['questions'] ?? []) ?></span>)
           </h2>
-          <span style="font-size: 12px; color: var(--text-muted);">
-            Total: <?= count($selectedPackage['questions'] ?? []) ?> Butir Soal
+          <span style="font-size: 11px; color: var(--text-muted);">
+            Tampilan ringkas minimalis untuk kemudahan pengelolaan soal
           </span>
         </div>
-        <button type="button" class="btn btn-amber btn-sm" onclick="openNewQuestionModal()" style="font-weight: 700;">
+        <button type="button" class="btn btn-amber btn-sm" onclick="openNewQuestionModal()" style="font-weight: 700; height: 34px;">
           + Tambah Soal
         </button>
       </div>
 
-      <!-- List of Existing Questions -->
-      <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+      <!-- Compact Question List -->
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
         <?php if (!empty($selectedPackage['questions'])): ?>
           <?php foreach ($selectedPackage['questions'] as $q): ?>
-            <div style="background: #FFFDF5; border: 1px solid #FDE68A; border-radius: var(--radius-sm); padding: 14px; display: flex; flex-direction: column; gap: 8px;">
-              
-              <div style="display: flex; align-items: center; justify-content: space-between;">
+            <?php
+              $kunci = '-';
+              if (!empty($q['options'])) {
+                foreach ($q['options'] as $o) {
+                  if ($o['is_correct']) { $kunci = $o['option_label']; break; }
+                }
+              } elseif ($q['type'] === 'isian') {
+                $kunci = $q['expected_answer'] ?? '-';
+              }
+            ?>
+            <div class="q-card-compact" style="border-color: #FDE68A;">
+              <!-- Top Row: Number, Category, Type, Key, Actions -->
+              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
                 <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy);">#<?= $q['question_number'] ?></span>
+                  <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy); background: #FFFBEB; padding: 2px 7px; border-radius: 4px; border: 1px solid #FDE68A;">#<?= $q['question_number'] ?></span>
                   <span class="badge badge-amber" style="font-size: 10px;"><?= esc($q['category_code'] ?? 'TWK') ?></span>
-                  <span style="font-size: 11px; color: var(--text-muted);">
-                    <?= $q['type'] === 'pilihan_ganda' ? 'Pilihan Ganda' : 'Isian Singkat' ?>
+                  <span class="badge badge-light" style="font-size: 10px; border: 1px solid var(--border-color);">
+                    <?= $q['type'] === 'pilihan_ganda' ? 'PG' : 'Isian' ?>
                   </span>
+                  <span class="badge badge-sage" style="font-size: 10px;">Kunci: <?= esc($kunci) ?></span>
                 </div>
 
-                <!-- Move Category Dropdown Form -->
-                <form action="<?= base_url("{$rolePrefix}/soal/move-question-category/{$q['id']}") ?>" method="post" style="display: flex; align-items: center; gap: 4px;">
-                  <?= csrf_field() ?>
-                  <span style="font-size: 10px; color: var(--text-muted);">Pindah ke:</span>
-                  <select name="target_category" style="font-size: 10px; padding: 2px 4px; border-radius: 4px; border: 1px solid var(--border-color);">
-                    <?php if (!empty($selectedPackage['categories'])): ?>
-                      <?php foreach ($selectedPackage['categories'] as $cOpt): ?>
-                        <option value="<?= esc($cOpt['code']) ?>" <?= ($q['category_code'] ?? '') === $cOpt['code'] ? 'selected' : '' ?>>
-                          <?= esc($cOpt['code']) ?>
-                        </option>
-                      <?php endforeach; ?>
-                    <?php else: ?>
-                      <option value="TWK">TWK</option>
-                      <option value="TIU">TIU</option>
-                      <option value="TKP">TKP</option>
-                    <?php endif; ?>
-                  </select>
-                  <button type="submit" style="font-size: 10px; padding: 2px 6px; background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 4px; cursor: pointer; font-weight: 600;">Pindah</button>
-                </form>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <!-- Move Category inline -->
+                  <form action="<?= base_url("{$rolePrefix}/soal/move-question-category/{$q['id']}") ?>" method="post" style="display: inline-flex; align-items: center; gap: 3px; margin: 0;">
+                    <?= csrf_field() ?>
+                    <select name="target_category" class="filter-guru-select" style="height: 28px !important; min-height: 28px !important; padding: 2px 20px 2px 6px !important; font-size: 10px !important; width: 75px;" onchange="this.form.submit()" title="Pindah Kategori">
+                      <?php if (!empty($selectedPackage['categories'])): ?>
+                        <?php foreach ($selectedPackage['categories'] as $cOpt): ?>
+                          <option value="<?= esc($cOpt['code']) ?>" <?= ($q['category_code'] ?? '') === $cOpt['code'] ? 'selected' : '' ?>>
+                            <?= esc($cOpt['code']) ?>
+                          </option>
+                        <?php endforeach; ?>
+                      <?php endif; ?>
+                    </select>
+                  </form>
+
+                  <button type="button" class="btn btn-secondary btn-sm" onclick="editExistingQuestion(<?= $q['id'] ?>)" style="height: 28px; font-size: 11px; padding: 0 8px; font-weight: 700;">
+                    ✏️ Edit
+                  </button>
+                  <a href="<?= base_url("{$rolePrefix}/soal/delete-question/{$q['id']}") ?>" onclick="return confirm('Yakin ingin menghapus butir soal #<?= $q['question_number'] ?>?')" style="font-size: 11px; font-weight: 700; color: #DC2626; text-decoration: none; padding: 4px 6px;" title="Hapus Soal">
+                    🗑️
+                  </a>
+                </div>
               </div>
 
-              <!-- Narration -->
-              <p style="font-size: 13px; color: var(--dark-navy); line-height: 1.45; margin: 0;">
+              <!-- Narration (Compact 1-2 lines) -->
+              <div style="font-size: 13px; color: var(--dark-navy); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
                 <?= esc($q['narrative']) ?>
-              </p>
+              </div>
 
-              <!-- Image if any -->
-              <?php if (!empty($q['image_url'])): ?>
-                <div>
-                  <img src="<?= esc($q['image_url']) ?>" alt="Gambar Soal" style="max-height: 120px; max-width: 100%; border-radius: 4px; border: 1px solid var(--border-color); object-fit: contain;">
-                </div>
-              <?php endif; ?>
-
-              <!-- Options -->
+              <!-- Options Compact Chip Preview -->
               <?php if (!empty($q['options'])): ?>
-                <div style="display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--text-muted); background: #FFFFFF; padding: 8px 10px; border-radius: 4px; border: 1px solid var(--border-light);">
+                <div style="display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; color: var(--text-muted);">
                   <?php foreach ($q['options'] as $o): ?>
-                    <div style="display: flex; align-items: center; gap: 6px;">
-                      <span style="font-weight: 700; color: <?= $o['is_correct'] ? 'var(--soft-sage-green)' : 'inherit' ?>;"><?= $o['option_label'] ?>.</span>
-                      <span style="flex: 1;"><?= esc($o['option_text']) ?></span>
-                      <span style="font-weight: 600; font-size: 10px; color: var(--warm-amber);">[Skor: <?= $o['score'] ?>]</span>
-                      <?php if ($o['is_correct']): ?>
-                        <span class="badge badge-sage" style="font-size: 9px; padding: 1px 4px;">Kunci Benar</span>
-                      <?php endif; ?>
-                    </div>
+                    <span style="background: <?= $o['is_correct'] ? '#ECFDF5' : '#FFFDF5' ?>; border: 1px solid <?= $o['is_correct'] ? '#A7F3D0' : '#FEF3C7' ?>; color: <?= $o['is_correct'] ? '#065F46' : 'inherit' ?>; padding: 2px 6px; border-radius: 4px; font-weight: <?= $o['is_correct'] ? '700' : '400' ?>;">
+                      <?= $o['option_label'] ?>. <?= esc(mb_strimwidth($o['option_text'], 0, 26, '..')) ?>
+                    </span>
                   <?php endforeach; ?>
                 </div>
-              <?php elseif ($q['type'] === 'isian' && !empty($q['expected_answer'])): ?>
-                <div style="font-size: 11px; background: #FFFFFF; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-light);">
-                  <span style="color: var(--text-muted);">Kunci Isian:</span> <strong><?= esc($q['expected_answer']) ?></strong>
+              <?php elseif ($q['type'] === 'isian'): ?>
+                <div style="font-size: 11px; color: var(--text-muted);">
+                  Kunci Isian: <strong><?= esc($q['expected_answer'] ?? '-') ?></strong>
                 </div>
               <?php endif; ?>
-
-              <?php if (!empty($q['discussion'])): ?>
-                <div style="font-size: 11px; color: #475569; background: #FFFBEB; padding: 6px 10px; border-radius: 4px; border: 1px solid #FDE68A;">
-                  <strong>Pembahasan:</strong> <?= esc($q['discussion']) ?>
-                </div>
-              <?php endif; ?>
-
-              <!-- Question Action Buttons -->
-              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 8px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="editExistingQuestion(<?= $q['id'] ?>)" style="height: 30px; font-size: 11px; font-weight: 700;">
-                  ✏️ Edit Soal
-                </button>
-                <a href="<?= base_url("{$rolePrefix}/soal/delete-question/{$q['id']}") ?>" onclick="return confirm('Yakin ingin menghapus butir soal #<?= $q['question_number'] ?>?')" style="font-size: 11px; font-weight: 700; color: #DC2626; text-decoration: none; padding: 4px 8px;">
-                  Hapus
-                </a>
-              </div>
-
             </div>
           <?php endforeach; ?>
         <?php else: ?>
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 16px 0;">
-            Belum ada soal pada paket ini. Klik tombol "+ Tambah Soal" di atas.
+          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0; background: #FFFDF5; border-radius: var(--radius-sm); border: 1px dashed #FDE68A;">
+            Belum ada butir soal pada paket ini. Klik tombol <strong>"+ Tambah Soal"</strong> di atas.
           </p>
         <?php endif; ?>
       </div>
     </div>
 
-    <!-- MODAL: Tambah / Edit Soal -->
+    <!-- MODAL: Tambah / Edit Soal (1-Line Auto-Expanding Inputs) -->
     <div id="q-modal" class="modal-backdrop">
       <div class="modal-dialog" style="max-height: 90vh; overflow-y: auto;">
         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <h3 id="q-modal-title" style="font-family: 'Outfit', sans-serif; font-size: 17px; font-weight: 700; color: var(--dark-navy);">
+          <h3 id="q-modal-title" style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
             Tambah Soal ke Paket
           </h3>
           <button type="button" onclick="closeModal('q-modal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
         </div>
 
-        <form id="q-form" action="<?= base_url("{$rolePrefix}/soal/save-question") ?>" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 12px;">
+        <form id="q-form" action="<?= base_url("{$rolePrefix}/soal/save-question") ?>" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
           <?= csrf_field() ?>
           <input type="hidden" name="package_id" value="<?= $selectedPackage['id'] ?>">
           <input type="hidden" name="question_id" id="modal-q-id" value="">
           <input type="hidden" name="remove_image" id="modal-remove-image" value="0">
 
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
             <!-- 1. Kategori Soal -->
             <div class="form-group">
-              <label class="form-label">1. Kategori Soal</label>
-              <select name="category_code" id="modal-cat-select" class="form-control">
+              <label class="form-label" style="font-size: 11px;">1. Kategori Soal</label>
+              <select name="category_code" id="modal-cat-select" class="form-control filter-guru-select">
                 <?php if (!empty($selectedPackage['categories'])): ?>
                   <?php foreach ($selectedPackage['categories'] as $cat): ?>
                     <option value="<?= esc($cat['code']) ?>"><?= esc($cat['code']) ?> - <?= esc($cat['name']) ?></option>
@@ -326,64 +287,63 @@
             </div>
 
             <div class="form-group">
-              <label class="form-label">Nomor Soal</label>
-              <input type="number" name="question_number" id="modal-q-num" class="form-control" placeholder="Auto">
+              <label class="form-label" style="font-size: 11px;">Nomor Soal</label>
+              <input type="number" name="question_number" id="modal-q-num" class="form-control" style="height: 42px; font-size: 13px;" placeholder="Auto">
             </div>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Jenis Soal</label>
-            <select name="type" id="modal-q-type" class="form-control" onchange="toggleModalQType()">
+            <label class="form-label" style="font-size: 11px;">Jenis Soal</label>
+            <select name="type" id="modal-q-type" class="form-control filter-guru-select" onchange="toggleModalQType()">
               <option value="pilihan_ganda" selected>Pilihan Ganda (A-E)</option>
               <option value="isian">Isian Singkat</option>
             </select>
           </div>
 
-          <!-- 2. Narasi Soal -->
+          <!-- 2. Narasi Soal (Auto-expanding 1-line) -->
           <div class="form-group">
-            <label class="form-label">2. Narasi Soal</label>
-            <textarea name="narrative" id="modal-narrative" class="form-control" rows="3" placeholder="Tuliskan teks pertanyaan lengkap..." required></textarea>
+            <label class="form-label" style="font-size: 11px;">2. Narasi Soal (1 Baris Awal, Auto-Expand)</label>
+            <textarea name="narrative" id="modal-narrative" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Ketik teks pertanyaan soal..." required></textarea>
           </div>
 
           <!-- Upload / Ganti Gambar -->
           <div class="form-group">
-            <label class="form-label">Gambar Soal (Opsional)</label>
-            <div id="modal-existing-img-wrapper" style="display: none; margin-bottom: 6px; align-items: center; gap: 8px;">
-              <img id="modal-existing-img" src="" style="max-height: 90px; border-radius: 4px; border: 1px solid var(--border-color);">
-              <button type="button" onclick="markRemoveImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 28px; font-size: 11px;">Hapus Gambar</button>
+            <label class="form-label" style="font-size: 11px;">Gambar Soal (Opsional)</label>
+            <div id="modal-existing-img-wrapper" style="display: none; margin-bottom: 4px; align-items: center; gap: 8px;">
+              <img id="modal-existing-img" src="" style="max-height: 60px; border-radius: 4px; border: 1px solid var(--border-color);">
+              <button type="button" onclick="markRemoveImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 26px; font-size: 10px;">Hapus Gambar</button>
             </div>
-            <input type="file" name="image" id="modal-image-input" accept="image/*" class="form-control" style="padding: 6px;">
+            <input type="file" name="image" id="modal-image-input" accept="image/*" class="form-control" style="height: 38px; padding: 6px 10px; font-size: 12px;">
           </div>
 
-          <!-- 3. Multiple Choice Options (A-E) -->
-          <div id="modal-pg-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
-            <label class="form-label">3. Opsi Jawaban & Skor (Tentukan Kunci Benar):</label>
-            <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Pilih radio button untuk jawaban benar. Skor dapat disesuaikan (misal TKP 1-5, TWK 5 & 0).</p>
+          <!-- 3. Multiple Choice Options (A-E) Auto-expanding -->
+          <div id="modal-pg-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
+            <label class="form-label" style="font-size: 11px; margin-bottom: 2px;">3. Opsi Jawaban (Pilih radio untuk kunci benar):</label>
             <?php foreach (['A', 'B', 'C', 'D', 'E'] as $opt): ?>
-              <div style="display: flex; align-items: center; gap: 6px; background: #F8FAFC; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-light);">
-                <input type="radio" name="correct_option" id="radio-opt-<?= $opt ?>" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Kunci Jawaban Benar">
+              <div style="display: flex; align-items: center; gap: 6px; background: #FFFDF5; padding: 4px 8px; border-radius: 4px; border: 1px solid #FEF3C7;">
+                <input type="radio" name="correct_option" id="radio-opt-<?= $opt ?>" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Kunci Benar" style="accent-color: var(--dark-navy);">
                 <span style="font-weight: 700; font-size: 12px; width: 14px;"><?= $opt ?></span>
-                <input type="text" name="option_<?= $opt ?>_text" id="modal-opt-text-<?= $opt ?>" class="form-control" style="height: 34px; font-size: 11px;" placeholder="Teks opsi <?= $opt ?>">
-                <input type="number" name="option_<?= $opt ?>_score" id="modal-opt-score-<?= $opt ?>" class="form-control" style="height: 34px; width: 64px; font-size: 11px; text-align: center;" value="<?= $opt === 'A' ? '5' : '0' ?>" title="Skor opsi">
+                <textarea name="option_<?= $opt ?>_text" id="modal-opt-text-<?= $opt ?>" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" style="flex: 1;" placeholder="Teks opsi <?= $opt ?>"></textarea>
+                <input type="number" name="option_<?= $opt ?>_score" id="modal-opt-score-<?= $opt ?>" class="form-control" style="height: 38px; width: 54px; font-size: 11px; text-align: center; padding: 4px;" value="<?= $opt === 'A' ? '5' : '0' ?>" title="Skor opsi">
               </div>
             <?php endforeach; ?>
           </div>
 
           <!-- Essay Section -->
-          <div id="modal-isian-wrapper" style="display: none; flex-direction: column; gap: 8px;">
+          <div id="modal-isian-wrapper" style="display: none; flex-direction: column; gap: 6px;">
             <div class="form-group">
-              <label class="form-label">3. Kunci Jawaban Isian</label>
-              <input type="text" name="expected_answer" id="modal-expected" class="form-control" placeholder="Jawaban yang diharapkan">
+              <label class="form-label" style="font-size: 11px;">3. Kunci Jawaban Isian</label>
+              <input type="text" name="expected_answer" id="modal-expected" class="form-control" style="height: 38px; font-size: 13px;" placeholder="Jawaban isian yang diharapkan">
             </div>
           </div>
 
-          <!-- 4. Pembahasan Lengkap -->
+          <!-- 4. Pembahasan Lengkap (Auto-expanding 1-line) -->
           <div class="form-group">
-            <label class="form-label">4. Pembahasan Lengkap</label>
-            <textarea name="discussion" id="modal-discussion" class="form-control" rows="2" placeholder="Tuliskan trik, rumus cepat, atau analisis pembahasan..."></textarea>
+            <label class="form-label" style="font-size: 11px;">4. Pembahasan Lengkap</label>
+            <textarea name="discussion" id="modal-discussion" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Trik / pembahasan jawaban (opsional)..."></textarea>
           </div>
 
-          <button type="submit" id="modal-submit-btn" class="btn btn-amber" style="margin-top: 6px;">
+          <button type="submit" id="modal-submit-btn" class="btn btn-amber" style="margin-top: 4px; height: 40px; font-size: 13px;">
             Simpan Soal
           </button>
         </form>
@@ -434,8 +394,31 @@
 
 <?= $this->section('scripts') ?>
 <script>
+function togglePackageDetails() {
+  const panel = document.getElementById('package-details-collapse');
+  if (panel) {
+    panel.style.display = (panel.style.display === 'none' || panel.style.display === '') ? 'block' : 'none';
+  }
+}
+
+function autoExpand(el) {
+  if (!el) return;
+  el.style.height = 'auto';
+  const newH = Math.max(38, el.scrollHeight);
+  el.style.height = newH + 'px';
+}
+
+function resetAllAutoExpands() {
+  document.querySelectorAll('.form-control-auto').forEach(el => {
+    autoExpand(el);
+  });
+}
+
 function openModal(id) {
   document.getElementById(id).classList.add('open');
+  if (id === 'q-modal') {
+    setTimeout(resetAllAutoExpands, 50);
+  }
 }
 
 function closeModal(id) {
@@ -454,6 +437,7 @@ function toggleModalQType() {
     pgWrapper.style.display = 'flex';
     isianWrapper.style.display = 'none';
   }
+  setTimeout(resetAllAutoExpands, 50);
 }
 
 function openNewQuestionModal() {
@@ -478,6 +462,7 @@ function openNewQuestionModal() {
 
   document.getElementById('modal-submit-btn').innerText = 'Simpan Soal Baru';
   openModal('q-modal');
+  setTimeout(resetAllAutoExpands, 50);
 }
 
 function editExistingQuestion(qId) {
@@ -536,6 +521,7 @@ function editExistingQuestion(qId) {
 
         document.getElementById('modal-submit-btn').innerText = 'Perbarui Soal';
         openModal('q-modal');
+        setTimeout(resetAllAutoExpands, 60);
       } else {
         alert(res.message || 'Gagal mengambil data soal');
       }

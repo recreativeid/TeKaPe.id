@@ -20,7 +20,7 @@
   <?php if ($rolePrefix === 'admin' && !empty($tentors)): ?>
     <div class="card" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #F8FAFC;">
       <span style="font-size: 12px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
-      <select onchange="location.href='<?= base_url("admin/soal/premium") ?>?tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px; max-width: 250px;">
+      <select onchange="location.href='<?= base_url("admin/soal/premium") ?>?tentor_id=' + this.value" class="form-control filter-guru-select" style="max-width: 250px;">
         <option value="">-- Semua Guru / Tentor --</option>
         <?php foreach ($tentors as $t): ?>
           <option value="<?= $t['id'] ?>" <?= (($selectedTentorId ?? null) == $t['id']) ? 'selected' : '' ?>>

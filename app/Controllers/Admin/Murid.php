@@ -218,37 +218,150 @@ class Murid extends BaseController
         ]);
     }
 
-    // Prompt 17 — Kelola Login Siswa
+    // Prompt 17 — Kelola Akun Siswa (Renamed from Kelola Login Siswa)
     public function loginSiswa()
     {
-        $search = $this->request->getGet('q');
-        $students = $this->userModel->getStudents();
+        return $this->akunSiswa();
+    }
 
+    public function akunSiswa()
+    {
+        $search   = $this->request->getGet('q');
+        $status   = $this->request->getGet('status') ?? 'semua';
+        $tentorId = $this->request->getGet('tentor_id') ? (int) $this->request->getGet('tentor_id') : null;
+
+        $students = $this->userModel->getStudents($tentorId);
+        $tentors  = $this->userModel->getTentors();
+
+        // Apply status filter
+        if ($status === 'premium') {
+            $students = array_filter($students, fn($s) => !empty($s['is_premium']) && $s['is_premium'] == 1);
+        } elseif ($status === 'free') {
+            $students = array_filter($students, fn($s) => empty($s['is_premium']) || $s['is_premium'] == 0);
+        }
+
+        // Apply search query
         if ($search) {
             $students = array_filter($students, function($s) use ($search) {
-                return stripos($s['name'], $search) !== false || stripos($s['username'], $search) !== false;
+                return stripos($s['name'], $search) !== false 
+                    || stripos($s['username'], $search) !== false 
+                    || stripos($s['phone_whatsapp'] ?? '', $search) !== false;
             });
         }
 
-        return view('admin/murid/login_siswa', [
-            'title'     => 'Kelola Login Siswa - TeKaPe.id',
-            'activeNav' => 'murid',
-            'students'  => $students,
-            'search'    => $search,
+        return view('admin/murid/akun_siswa', [
+            'title'            => 'Kelola Akun Siswa - TeKaPe.id',
+            'activeNav'        => 'murid',
+            'students'         => $students,
+            'tentors'          => $tentors,
+            'selectedTentorId' => $tentorId,
+            'status'           => $status,
+            'search'           => $search,
         ]);
+    }
+
+    // Buat Akun Siswa Baru
+    public function createStudent()
+    {
+        $name          = trim($this->request->getPost('name') ?? '');
+        $username      = trim($this->request->getPost('username') ?? '');
+        $password      = $this->request->getPost('password') ?? '';
+        $phoneWhatsapp = trim($this->request->getPost('phone_whatsapp') ?? '');
+        $isPremium     = (int) ($this->request->getPost('is_premium') ?? 0);
+        $tentorId      = $this->request->getPost('assigned_tentor_id');
+        $tentorId      = !empty($tentorId) ? (int) $tentorId : null;
+
+        if (empty($name)) {
+            return redirect()->back()->withInput()->with('error', 'Nama lengkap murid wajib diisi.');
+        }
+
+        if (empty($username) || strlen($username) < 3) {
+            return redirect()->back()->withInput()->with('error', 'Username minimal 3 karakter tanpa spasi.');
+        }
+
+        // Validate username format (alphanumeric and underscore/dot)
+        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $username)) {
+            return redirect()->back()->withInput()->with('error', 'Username hanya boleh mengandung huruf, angka, titik, strip, atau underscore.');
+        }
+
+        // Check if username already taken
+        $existing = $this->userModel->where('username', $username)->first();
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', "Username '{$username}' sudah digunakan. Silakan pilih username lain.");
+        }
+
+        if (empty($password) || strlen($password) < 6) {
+            return redirect()->back()->withInput()->with('error', 'Password minimal 6 karakter.');
+        }
+
+        // Normalize phone number for WhatsApp
+        $cleanPhone = preg_replace('/[^0-9]/', '', $phoneWhatsapp);
+        if (substr($cleanPhone, 0, 1) === '0') {
+            $cleanPhone = '62' . substr($cleanPhone, 1);
+        }
+
+        $userId = $this->userModel->insert([
+            'name'           => $name,
+            'username'       => $username,
+            'password_hash'  => password_hash($password, PASSWORD_BCRYPT),
+            'role'           => 'murid',
+            'phone_whatsapp' => $phoneWhatsapp,
+            'created_at'     => date('Y-m-d H:i:s'),
+            'updated_at'     => date('Y-m-d H:i:s'),
+        ]);
+
+        if ($userId) {
+            $db = \Config\Database::connect();
+            $metaData = [
+                'user_id'            => $userId,
+                'is_premium'         => $isPremium,
+                'attendance_rate'    => 100,
+                'assigned_tentor_id' => $tentorId,
+            ];
+
+            if ($isPremium == 1) {
+                $metaData['premium_start']  = date('Y-m-d');
+                $metaData['premium_expiry'] = date('Y-m-d', strtotime('+30 days'));
+            }
+
+            $db->table('students_meta')->insert($metaData);
+
+            // Flash info so admin can immediately copy WA message with credentials
+            session()->setFlashdata('new_student_created', [
+                'id'         => $userId,
+                'name'       => $name,
+                'username'   => $username,
+                'password'   => $password,
+                'phone'      => $cleanPhone,
+                'is_premium' => $isPremium,
+            ]);
+
+            return redirect()->to(base_url('admin/murid/akunSiswa'))->with('success', "Akun siswa {$name} (@{$username}) berhasil dibuat!");
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Gagal membuat akun siswa. Silakan coba lagi.');
     }
 
     // Ubah Username Siswa
     public function updateStudentUsername($id)
     {
         $newUsername = trim($this->request->getPost('new_username') ?? '');
-        if (empty($newUsername) || strlen($newUsername) < 4) {
-            return redirect()->back()->with('error', 'Username baru minimal 4 karakter.');
+        if (empty($newUsername) || strlen($newUsername) < 3) {
+            return redirect()->back()->with('error', 'Username baru minimal 3 karakter.');
+        }
+
+        if (!preg_match('/^[a-zA-Z0-9._-]+$/', $newUsername)) {
+            return redirect()->back()->with('error', 'Username hanya boleh mengandung huruf, angka, titik, strip, atau underscore.');
+        }
+
+        $student = $this->userModel->find($id);
+        if (!$student) {
+            return redirect()->back()->with('error', 'Siswa tidak ditemukan.');
         }
 
         $existing = $this->userModel->where('username', $newUsername)->where('id !=', $id)->first();
         if ($existing) {
-            return redirect()->back()->with('error', 'Username tersebut sudah digunakan oleh akun lain.');
+            return redirect()->back()->with('error', "Username '{$newUsername}' sudah digunakan oleh akun lain.");
         }
 
         $this->userModel->update($id, [
@@ -256,7 +369,20 @@ class Murid extends BaseController
             'updated_at' => date('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->back()->with('success', "Username berhasil diubah menjadi {$newUsername}.");
+        $cleanPhone = preg_replace('/[^0-9]/', '', $student['phone_whatsapp'] ?? '');
+        if (substr($cleanPhone, 0, 1) === '0') {
+            $cleanPhone = '62' . substr($cleanPhone, 1);
+        }
+
+        session()->setFlashdata('username_changed_success', [
+            'id'           => $id,
+            'name'         => $student['name'],
+            'old_username' => $student['username'],
+            'new_username' => $newUsername,
+            'phone'        => $cleanPhone,
+        ]);
+
+        return redirect()->back()->with('success', "Username siswa {$student['name']} berhasil diubah menjadi @{$newUsername}.");
     }
 
     // Reset Password Siswa
@@ -267,11 +393,29 @@ class Murid extends BaseController
             return redirect()->back()->with('error', 'Password baru minimal 6 karakter.');
         }
 
+        $student = $this->userModel->find($id);
+        if (!$student) {
+            return redirect()->back()->with('error', 'Siswa tidak ditemukan.');
+        }
+
         $this->userModel->update($id, [
             'password_hash' => password_hash($newPassword, PASSWORD_BCRYPT),
             'updated_at'    => date('Y-m-d H:i:s'),
         ]);
 
-        return redirect()->back()->with('success', 'Password akun siswa berhasil direset.');
+        $cleanPhone = preg_replace('/[^0-9]/', '', $student['phone_whatsapp'] ?? '');
+        if (substr($cleanPhone, 0, 1) === '0') {
+            $cleanPhone = '62' . substr($cleanPhone, 1);
+        }
+
+        session()->setFlashdata('password_reset_success', [
+            'id'       => $id,
+            'name'     => $student['name'],
+            'username' => $student['username'],
+            'password' => $newPassword,
+            'phone'    => $cleanPhone,
+        ]);
+
+        return redirect()->back()->with('success', "Password akun siswa {$student['name']} (@{$student['username']}) berhasil direset.");
     }
 }
