@@ -90,12 +90,12 @@
 
   <!-- Flash Notification: Username Changed Success -->
   <?php if ($userChanged = session()->getFlashdata('username_changed_success')): ?>
-    <div class="card" style="border: 2px solid #6366F1; background: linear-gradient(135deg, #EEF2FF 0%, #FFFFFF 100%); padding: 18px; border-radius: 12px;">
+    <div class="card" style="border: 1px solid var(--border-color); background: #FFFFFF; padding: 18px; border-radius: 12px; box-shadow: 0 2px 8px rgba(30, 34, 56, 0.04);">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
         <div>
-          <h3 style="font-size: 15px; font-weight: 700; color: #3730A3; margin: 0 0 4px;">✏️ Username Berhasil Diperbarui!</h3>
-          <p style="font-size: 13px; color: #4338CA; margin: 0;">
-            Siswa <strong><?= esc($userChanged['name']) ?></strong> sekarang menggunakan username: <strong style="font-family: monospace; font-size: 14px; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #C7D2FE;">@<?= esc($userChanged['new_username']) ?></strong> (Sebelumnya: @<?= esc($userChanged['old_username']) ?>)
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--dark-navy); margin: 0 0 4px;">✏️ Username Berhasil Diperbarui!</h3>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+            Siswa <strong><?= esc($userChanged['name']) ?></strong> sekarang menggunakan username: <strong style="font-family: monospace; font-size: 14px; background: #F1F4F9; color: var(--dark-navy); padding: 2px 6px; border-radius: 4px; border: 1px solid #CBD5E1;">@<?= esc($userChanged['new_username']) ?></strong> (Sebelumnya: @<?= esc($userChanged['old_username']) ?>)
           </p>
         </div>
         <div>
@@ -282,7 +282,7 @@
     <div class="modal-dialog" style="max-width: 500px;">
       <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid var(--border-light); padding-bottom: 10px;">
         <div style="display: flex; align-items: center; gap: 8px;">
-          <div style="width: 32px; height: 32px; border-radius: 8px; background: #EEF2FF; color: #4F46E5; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+          <div style="width: 32px; height: 32px; border-radius: 8px; background: #F1F4F9; color: var(--dark-navy); display: flex; align-items: center; justify-content: center; font-size: 16px;">
             👤
           </div>
           <h3 style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--dark-navy); margin: 0;">
@@ -320,7 +320,7 @@
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <label class="form-label" style="font-weight: 600; font-size: 13px; margin: 0;">Password Baru <span style="color: red;">*</span></label>
-            <button type="button" onclick="generateRandomPassword('create-password')" style="background: none; border: none; color: #4F46E5; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+            <button type="button" onclick="generateRandomPassword('create-password')" style="background: none; border: none; color: var(--warm-amber); font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px;">
               🎲 Acak Password
             </button>
           </div>
@@ -428,14 +428,14 @@
         <div style="background: #F8FAFC; padding: 10px 12px; border-radius: 8px; border: 1px solid #E2E8F0;">
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span style="font-size: 12px; color: var(--text-muted);">Murid: <strong id="p-student-name" style="color: var(--dark-navy);"></strong></span>
-            <span style="font-size: 12px; font-family: monospace; color: #4338CA; background: #EEF2FF; padding: 2px 6px; border-radius: 4px;">@<span id="p-student-username"></span></span>
+            <span style="font-size: 12px; font-family: monospace; color: var(--dark-navy); background: #F1F4F9; border: 1px solid #CBD5E1; padding: 2px 6px; border-radius: 4px;">@<span id="p-student-username"></span></span>
           </div>
         </div>
 
         <div class="form-group">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <label class="form-label" style="font-size: 12px; font-weight: 600; margin: 0;">Password Baru Sementara <span style="color: red;">*</span></label>
-            <button type="button" onclick="generateRandomPassword('p-new-password')" style="background: none; border: none; color: #4F46E5; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 3px;">
+            <button type="button" onclick="generateRandomPassword('p-new-password')" style="background: none; border: none; color: var(--warm-amber); font-size: 11px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 3px;">
               🎲 Acak Password
             </button>
           </div>
@@ -460,7 +460,7 @@
   </div>
 
   <!-- Toast Notification Container -->
-  <div id="tekape-toast" style="position: fixed; bottom: 24px; right: 24px; background: #1E2238; color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; display: none; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 9999; border-left: 4px solid #10B981;">
+  <div id="tekape-toast" style="position: fixed; bottom: 24px; right: 24px; background: var(--dark-navy); color: white; padding: 12px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; display: none; align-items: center; gap: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); z-index: 9999; border: 1px solid rgba(255,255,255,0.15);">
     <span>✓</span>
     <span id="toast-message">Pesan tersalin!</span>
   </div>
@@ -498,7 +498,7 @@ function togglePasswordVisibility(inputId, btn) {
   const input = document.getElementById(inputId);
   if (input.type === 'password') {
     input.type = 'text';
-    btn.style.color = '#4F46E5';
+    btn.style.color = 'var(--dark-navy)';
   } else {
     input.type = 'password';
     btn.style.color = 'var(--text-muted)';
