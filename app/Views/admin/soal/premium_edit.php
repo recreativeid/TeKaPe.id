@@ -69,7 +69,7 @@
     <!-- SELECTED PACKAGE EDIT WORKSPACE -->
     
     <!-- Compact Package Header Strip (No Redundant Form) -->
-    <div class="card" style="padding: 14px 16px; background: #FFFFFF; border-left: 4px solid var(--warm-amber); border-color: #FDE68A;">
+    <div class="card" style="padding: 14px 16px; background: #FFFFFF; border-color: #FDE68A;">
       <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; flex-direction: column; gap: 3px;">
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
@@ -158,122 +158,150 @@
       </button>
     </div>
 
-    <!-- 3. Question Management Section (Front & Center) -->
-    <div class="card" style="padding: 16px;">
-      <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-        <div>
-          <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin: 0;">
-            Daftar Butir Soal Premium (<span id="count-soal-header"><?= count($selectedPackage['questions'] ?? []) ?></span>)
-          </h2>
-          <span style="font-size: 11px; color: var(--text-muted);">
-            Tampilan ringkas minimalis untuk kemudahan pengelolaan soal
-          </span>
+    <!-- 3. Question Management Section: QUESTION LIST VIEW -->
+    <div id="section-question-list">
+      <div class="card" style="padding: 18px; border-radius: 12px; background: #FFFFFF; border-color: #FDE68A;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+          <div>
+            <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+              Daftar Butir Soal Premium (<span id="count-soal-header"><?= count($selectedPackage['questions'] ?? []) ?></span>)
+            </h2>
+            <span style="font-size: 11px; color: var(--text-muted);">
+              Kelola butir pertanyaan pada paket ini. Klik tombol di kanan untuk membuka editor soal full halaman.
+            </span>
+          </div>
+          <button type="button" class="btn btn-amber btn-sm" onclick="openNewQuestionEditor()" style="font-weight: 700; height: 36px; padding: 0 16px; display: inline-flex; align-items: center; gap: 6px;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            + Tambah Soal
+          </button>
         </div>
-        <button type="button" class="btn btn-amber btn-sm" onclick="openNewQuestionModal()" style="font-weight: 700; height: 34px;">
-          + Tambah Soal
-        </button>
-      </div>
 
-      <!-- Compact Question List -->
-      <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 6px;">
-        <?php if (!empty($selectedPackage['questions'])): ?>
-          <?php foreach ($selectedPackage['questions'] as $q): ?>
-            <?php
-              $kunci = '-';
-              if (!empty($q['options'])) {
-                foreach ($q['options'] as $o) {
-                  if ($o['is_correct']) { $kunci = $o['option_label']; break; }
+        <!-- Compact Question List -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <?php if (!empty($selectedPackage['questions'])): ?>
+            <?php foreach ($selectedPackage['questions'] as $q): ?>
+              <?php
+                $kunci = '-';
+                if (!empty($q['options'])) {
+                  foreach ($q['options'] as $o) {
+                    if ($o['is_correct']) { $kunci = $o['option_label']; break; }
+                  }
+                } elseif ($q['type'] === 'isian') {
+                  $kunci = $q['expected_answer'] ?? '-';
                 }
-              } elseif ($q['type'] === 'isian') {
-                $kunci = $q['expected_answer'] ?? '-';
-              }
-            ?>
-            <div class="q-card-compact" style="border-color: #FDE68A;">
-              <!-- Top Row: Number, Category, Type, Key, Actions -->
-              <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy); background: #FFFBEB; padding: 2px 7px; border-radius: 4px; border: 1px solid #FDE68A;">#<?= $q['question_number'] ?></span>
-                  <span class="badge badge-amber" style="font-size: 10px;"><?= esc($q['category_code'] ?? 'TWK') ?></span>
-                  <span class="badge badge-light" style="font-size: 10px; border: 1px solid var(--border-color);">
-                    <?= $q['type'] === 'pilihan_ganda' ? 'PG' : 'Isian' ?>
-                  </span>
-                  <span class="badge badge-sage" style="font-size: 10px;">Kunci: <?= esc($kunci) ?></span>
-                </div>
-
-                <div style="display: flex; align-items: center; gap: 6px;">
-                  <!-- Move Category inline -->
-                  <form action="<?= base_url("{$rolePrefix}/soal/move-question-category/{$q['id']}") ?>" method="post" style="display: inline-flex; align-items: center; gap: 3px; margin: 0;">
-                    <?= csrf_field() ?>
-                    <select name="target_category" class="filter-guru-select" style="height: 28px !important; min-height: 28px !important; padding: 2px 20px 2px 6px !important; font-size: 10px !important; width: 75px;" onchange="this.form.submit()" title="Pindah Kategori">
-                      <?php if (!empty($selectedPackage['categories'])): ?>
-                        <?php foreach ($selectedPackage['categories'] as $cOpt): ?>
-                          <option value="<?= esc($cOpt['code']) ?>" <?= ($q['category_code'] ?? '') === $cOpt['code'] ? 'selected' : '' ?>>
-                            <?= esc($cOpt['code']) ?>
-                          </option>
-                        <?php endforeach; ?>
-                      <?php endif; ?>
-                    </select>
-                  </form>
-
-                  <button type="button" class="btn btn-secondary btn-sm" onclick="editExistingQuestion(<?= $q['id'] ?>)" style="height: 28px; font-size: 11px; padding: 0 8px; font-weight: 700;">
-                    ✏️ Edit
-                  </button>
-                  <a href="<?= base_url("{$rolePrefix}/soal/delete-question/{$q['id']}") ?>" onclick="return confirm('Yakin ingin menghapus butir soal #<?= $q['question_number'] ?>?')" style="font-size: 11px; font-weight: 700; color: #DC2626; text-decoration: none; padding: 4px 6px;" title="Hapus Soal">
-                    🗑️
-                  </a>
-                </div>
-              </div>
-
-              <!-- Narration (Compact 1-2 lines) -->
-              <div style="font-size: 13px; color: var(--dark-navy); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-                <?= esc($q['narrative']) ?>
-              </div>
-
-              <!-- Options Compact Chip Preview -->
-              <?php if (!empty($q['options'])): ?>
-                <div style="display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; color: var(--text-muted);">
-                  <?php foreach ($q['options'] as $o): ?>
-                    <span style="background: <?= $o['is_correct'] ? '#ECFDF5' : '#FFFDF5' ?>; border: 1px solid <?= $o['is_correct'] ? '#A7F3D0' : '#FEF3C7' ?>; color: <?= $o['is_correct'] ? '#065F46' : 'inherit' ?>; padding: 2px 6px; border-radius: 4px; font-weight: <?= $o['is_correct'] ? '700' : '400' ?>;">
-                      <?= $o['option_label'] ?>. <?= esc(mb_strimwidth($o['option_text'], 0, 26, '..')) ?>
+              ?>
+              <div class="q-card-compact" style="border-color: #FDE68A;">
+                <!-- Top Row: Number, Category, Type, Key, Actions -->
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy); background: #FFFBEB; padding: 2px 7px; border-radius: 4px; border: 1px solid #FDE68A;">#<?= $q['question_number'] ?></span>
+                    <span class="badge badge-amber" style="font-size: 10px;"><?= esc($q['category_code'] ?? 'TWK') ?></span>
+                    <span class="badge badge-light" style="font-size: 10px; border: 1px solid var(--border-color);">
+                      <?= $q['type'] === 'pilihan_ganda' ? 'PG' : 'Isian' ?>
                     </span>
-                  <?php endforeach; ?>
+                    <span class="badge badge-sage" style="font-size: 10px;">Kunci: <?= esc($kunci) ?></span>
+                  </div>
+
+                  <div style="display: flex; align-items: center; gap: 6px;">
+                    <!-- Move Category inline -->
+                    <form action="<?= base_url("{$rolePrefix}/soal/move-question-category/{$q['id']}") ?>" method="post" style="display: inline-flex; align-items: center; gap: 3px; margin: 0;">
+                      <?= csrf_field() ?>
+                      <select name="target_category" class="filter-guru-select" style="height: 28px !important; min-height: 28px !important; padding: 2px 20px 2px 6px !important; font-size: 10px !important; width: 75px;" onchange="this.form.submit()" title="Pindah Kategori">
+                        <?php if (!empty($selectedPackage['categories'])): ?>
+                          <?php foreach ($selectedPackage['categories'] as $cOpt): ?>
+                            <option value="<?= esc($cOpt['code']) ?>" <?= ($q['category_code'] ?? '') === $cOpt['code'] ? 'selected' : '' ?>>
+                              <?= esc($cOpt['code']) ?>
+                            </option>
+                          <?php endforeach; ?>
+                        <?php endif; ?>
+                      </select>
+                    </form>
+
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="editExistingQuestion(<?= $q['id'] ?>)" style="height: 28px; font-size: 11px; padding: 0 10px; font-weight: 700;">
+                      ✏️ Edit
+                    </button>
+                    <a href="<?= base_url("{$rolePrefix}/soal/delete-question/{$q['id']}") ?>" onclick="return confirm('Yakin ingin menghapus butir soal #<?= $q['question_number'] ?>?')" style="font-size: 11px; font-weight: 700; color: #DC2626; text-decoration: none; padding: 4px 6px;" title="Hapus Soal">
+                      🗑️
+                    </a>
+                  </div>
                 </div>
-              <?php elseif ($q['type'] === 'isian'): ?>
-                <div style="font-size: 11px; color: var(--text-muted);">
-                  Kunci Isian: <strong><?= esc($q['expected_answer'] ?? '-') ?></strong>
+
+                <!-- Narration (Compact 1-2 lines) -->
+                <div style="font-size: 13px; color: var(--dark-navy); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                  <?= esc($q['narrative']) ?>
                 </div>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px 0; background: #FFFDF5; border-radius: var(--radius-sm); border: 1px dashed #FDE68A;">
-            Belum ada butir soal pada paket ini. Klik tombol <strong>"+ Tambah Soal"</strong> di atas.
-          </p>
-        <?php endif; ?>
+
+                <!-- Options Compact Chip Preview -->
+                <?php if (!empty($q['options'])): ?>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; color: var(--text-muted);">
+                    <?php foreach ($q['options'] as $o): ?>
+                      <span style="background: <?= $o['is_correct'] ? '#ECFDF5' : '#FFFDF5' ?>; border: 1px solid <?= $o['is_correct'] ? '#A7F3D0' : '#FEF3C7' ?>; color: <?= $o['is_correct'] ? '#065F46' : 'inherit' ?>; padding: 2px 6px; border-radius: 4px; font-weight: <?= $o['is_correct'] ? '700' : '400' ?>;">
+                        <?= $o['option_label'] ?>. <?= esc(mb_strimwidth($o['option_text'], 0, 26, '..')) ?>
+                      </span>
+                    <?php endforeach; ?>
+                  </div>
+                <?php elseif ($q['type'] === 'isian'): ?>
+                  <div style="font-size: 11px; color: var(--text-muted);">
+                    Kunci Isian: <strong><?= esc($q['expected_answer'] ?? '-') ?></strong>
+                  </div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <p style="font-size: 12px; color: var(--text-muted); text-align: center; padding: 24px 0; background: #FFFDF5; border-radius: var(--radius-sm); border: 1px dashed #FDE68A;">
+              Belum ada butir soal pada paket ini. Klik tombol <strong>"+ Tambah Soal"</strong> untuk membuka editor soal full halaman.
+            </p>
+          <?php endif; ?>
+        </div>
       </div>
     </div>
 
-    <!-- MODAL: Tambah / Edit Soal (1-Line Auto-Expanding Inputs) -->
-    <div id="q-modal" class="modal-backdrop">
-      <div class="modal-dialog" style="max-height: 90vh; overflow-y: auto;">
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-          <h3 id="q-modal-title" style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
-            Tambah Soal ke Paket
-          </h3>
-          <button type="button" onclick="closeModal('q-modal')" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+    <!-- ============================================================== -->
+    <!-- FULL PAGE QUESTION EDITOR (Bukan Pop Up, Full Halaman & Ringkas)-->
+    <!-- Ukuran kolom 1 baris awal & dinamis berubah mengikuti panjang huruf-->
+    <!-- ============================================================== -->
+    <div id="section-question-editor" style="display: none; flex-direction: column; gap: 14px;">
+      
+      <!-- Top Action Bar -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; background: #FFFFFF; border: 1px solid #FDE68A; border-radius: 12px; padding: 14px 18px; box-shadow: 0 1px 3px rgba(30, 34, 56, 0.04);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <button type="button" onclick="closeQuestionEditor()" class="back-btn" title="Kembali ke Daftar Soal" style="width: 36px; height: 36px; cursor: pointer;">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+          </button>
+          <div>
+            <h2 id="q-editor-title" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+              Tambah Butir Soal Premium
+            </h2>
+            <span style="font-size: 12px; color: var(--text-muted);">
+              Paket: <strong><?= esc($selectedPackage['title']) ?></strong> &bull; Halaman Editor Soal
+            </span>
+          </div>
         </div>
 
-        <form id="q-form" action="<?= base_url("{$rolePrefix}/soal/save-question") ?>" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <button type="button" onclick="closeQuestionEditor()" class="btn btn-secondary btn-sm" style="height: 38px; padding: 0 16px; font-weight: 600;">
+            Batal
+          </button>
+          <button type="button" onclick="document.getElementById('q-form').requestSubmit();" id="editor-top-submit-btn" class="btn btn-amber btn-sm" style="height: 38px; padding: 0 20px; font-weight: 700;">
+            💾 Simpan Soal
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Form Card Full Width -->
+      <div class="card" style="padding: 22px; border-radius: 14px; background: #FFFFFF; border: 1px solid #FDE68A; box-shadow: 0 1px 4px rgba(30, 34, 56, 0.04);">
+        <form id="q-form" action="<?= base_url("{$rolePrefix}/soal/save-question") ?>" method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 16px;">
           <?= csrf_field() ?>
           <input type="hidden" name="package_id" value="<?= $selectedPackage['id'] ?>">
           <input type="hidden" name="question_id" id="modal-q-id" value="">
           <input type="hidden" name="remove_image" id="modal-remove-image" value="0">
 
-          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
-            <!-- 1. Kategori Soal -->
+          <!-- Row 1: Kategori, Nomor, Jenis Soal (3 Kolom Sejajar yang Ringkas) -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; background: #FFFDF5; padding: 14px; border-radius: 10px; border: 1px solid #FEF3C7;">
+            <!-- Kategori -->
             <div class="form-group">
-              <label class="form-label" style="font-size: 11px;">1. Kategori Soal</label>
-              <select name="category_code" id="modal-cat-select" class="form-control filter-guru-select">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">1. Kategori Soal</label>
+              <select name="category_code" id="modal-cat-select" class="form-control filter-guru-select" style="background: #FFFFFF;">
                 <?php if (!empty($selectedPackage['categories'])): ?>
                   <?php foreach ($selectedPackage['categories'] as $cat): ?>
                     <option value="<?= esc($cat['code']) ?>"><?= esc($cat['code']) ?> - <?= esc($cat['name']) ?></option>
@@ -286,68 +314,92 @@
               </select>
             </div>
 
+            <!-- Nomor Soal -->
             <div class="form-group">
-              <label class="form-label" style="font-size: 11px;">Nomor Soal</label>
-              <input type="number" name="question_number" id="modal-q-num" class="form-control" style="height: 42px; font-size: 13px;" placeholder="Auto">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">Nomor Soal</label>
+              <input type="number" name="question_number" id="modal-q-num" class="form-control" style="height: 42px; font-size: 13px; background: #FFFFFF;" placeholder="Otomatis (Nomor urut)">
+            </div>
+
+            <!-- Jenis Soal -->
+            <div class="form-group">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">Jenis Soal</label>
+              <select name="type" id="modal-q-type" class="form-control filter-guru-select" onchange="toggleModalQType()" style="background: #FFFFFF;">
+                <option value="pilihan_ganda" selected>Pilihan Ganda (A-E)</option>
+                <option value="isian">Isian Singkat</option>
+              </select>
             </div>
           </div>
 
+          <!-- Row 2: Narasi Soal (1 Baris Awal, Auto-Expand) -->
           <div class="form-group">
-            <label class="form-label" style="font-size: 11px;">Jenis Soal</label>
-            <select name="type" id="modal-q-type" class="form-control filter-guru-select" onchange="toggleModalQType()">
-              <option value="pilihan_ganda" selected>Pilihan Ganda (A-E)</option>
-              <option value="isian">Isian Singkat</option>
-            </select>
-          </div>
-
-          <!-- 2. Narasi Soal (Auto-expanding 1-line) -->
-          <div class="form-group">
-            <label class="form-label" style="font-size: 11px;">2. Narasi Soal (1 Baris Awal, Auto-Expand)</label>
-            <textarea name="narrative" id="modal-narrative" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Ketik teks pertanyaan soal..." required></textarea>
-          </div>
-
-          <!-- Upload / Ganti Gambar -->
-          <div class="form-group">
-            <label class="form-label" style="font-size: 11px;">Gambar Soal (Opsional)</label>
-            <div id="modal-existing-img-wrapper" style="display: none; margin-bottom: 4px; align-items: center; gap: 8px;">
-              <img id="modal-existing-img" src="" style="max-height: 60px; border-radius: 4px; border: 1px solid var(--border-color);">
-              <button type="button" onclick="markRemoveImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 26px; font-size: 10px;">Hapus Gambar</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">2. Narasi / Teks Pertanyaan Soal</label>
+              <small style="font-size: 11px; color: var(--text-muted);">Tinggi kolom 1 baris awal & otomatis bertambah hanya saat teks melebihi batas baris</small>
             </div>
-            <input type="file" name="image" id="modal-image-input" accept="image/*" class="form-control" style="height: 38px; padding: 6px 10px; font-size: 12px;">
+            <textarea name="narrative" id="modal-narrative" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Ketik teks pertanyaan soal di sini..." required></textarea>
           </div>
 
-          <!-- 3. Multiple Choice Options (A-E) Auto-expanding -->
-          <div id="modal-pg-wrapper" style="display: flex; flex-direction: column; gap: 6px;">
-            <label class="form-label" style="font-size: 11px; margin-bottom: 2px;">3. Opsi Jawaban (Pilih radio untuk kunci benar):</label>
+          <!-- Row 3: Gambar Soal (Opsional) -->
+          <div class="form-group">
+            <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">Gambar Soal (Opsional)</label>
+            <div id="modal-existing-img-wrapper" style="display: none; margin-bottom: 6px; align-items: center; gap: 10px;">
+              <img id="modal-existing-img" src="" style="max-height: 70px; border-radius: 6px; border: 1px solid var(--border-color);">
+              <button type="button" onclick="markRemoveImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 30px; font-size: 11px;">Hapus Gambar</button>
+            </div>
+            <input type="file" name="image" id="modal-image-input" accept="image/*" class="form-control" style="height: 38px; padding: 6px 12px; font-size: 12px;">
+          </div>
+
+          <!-- Row 4: Pilihan Ganda (A-E) -->
+          <div id="modal-pg-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+                3. Pilihan Opsi Jawaban (Pilih radio untuk Kunci Benar):
+              </label>
+              <small style="font-size: 11px; color: var(--text-muted);">Masing-masing 1 baris, memanjang dinamis saat teks panjang</small>
+            </div>
+
             <?php foreach (['A', 'B', 'C', 'D', 'E'] as $opt): ?>
-              <div style="display: flex; align-items: center; gap: 6px; background: #FFFDF5; padding: 4px 8px; border-radius: 4px; border: 1px solid #FEF3C7;">
-                <input type="radio" name="correct_option" id="radio-opt-<?= $opt ?>" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Kunci Benar" style="accent-color: var(--dark-navy);">
-                <span style="font-weight: 700; font-size: 12px; width: 14px;"><?= $opt ?></span>
-                <textarea name="option_<?= $opt ?>_text" id="modal-opt-text-<?= $opt ?>" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" style="flex: 1;" placeholder="Teks opsi <?= $opt ?>"></textarea>
-                <input type="number" name="option_<?= $opt ?>_score" id="modal-opt-score-<?= $opt ?>" class="form-control" style="height: 38px; width: 54px; font-size: 11px; text-align: center; padding: 4px;" value="<?= $opt === 'A' ? '5' : '0' ?>" title="Skor opsi">
+              <div style="display: flex; align-items: center; gap: 8px; background: #FFFFFF; padding: 6px 10px; border-radius: 8px; border: 1px solid #FEF3C7;">
+                <input type="radio" name="correct_option" id="radio-opt-<?= $opt ?>" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Pilih sebagai Kunci Jawaban Benar" style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--warm-amber);">
+                <span style="font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 13px; width: 16px; color: var(--dark-navy); text-align: center;"><?= $opt ?></span>
+                <textarea name="option_<?= $opt ?>_text" id="modal-opt-text-<?= $opt ?>" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" style="flex: 1;" placeholder="Ketik teks pilihan <?= $opt ?>..."></textarea>
+                <div style="display: flex; align-items: center; gap: 4px;" title="Skor bobot untuk opsi ini">
+                  <span style="font-size: 11px; color: var(--text-muted);">Skor:</span>
+                  <input type="number" name="option_<?= $opt ?>_score" id="modal-opt-score-<?= $opt ?>" class="form-control" style="height: 38px; width: 56px; font-size: 12px; text-align: center; padding: 4px; font-weight: 600;" value="<?= $opt === 'A' ? '5' : '0' ?>">
+                </div>
               </div>
             <?php endforeach; ?>
           </div>
 
-          <!-- Essay Section -->
+          <!-- Row 5: Kunci Jawaban Isian -->
           <div id="modal-isian-wrapper" style="display: none; flex-direction: column; gap: 6px;">
             <div class="form-group">
-              <label class="form-label" style="font-size: 11px;">3. Kunci Jawaban Isian</label>
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">3. Kunci Jawaban Isian</label>
               <input type="text" name="expected_answer" id="modal-expected" class="form-control" style="height: 38px; font-size: 13px;" placeholder="Jawaban isian yang diharapkan">
             </div>
           </div>
 
-          <!-- 4. Pembahasan Lengkap (Auto-expanding 1-line) -->
+          <!-- Row 6: Pembahasan Lengkap -->
           <div class="form-group">
-            <label class="form-label" style="font-size: 11px;">4. Pembahasan Lengkap</label>
-            <textarea name="discussion" id="modal-discussion" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Trik / pembahasan jawaban (opsional)..."></textarea>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+              <label class="form-label" style="font-size: 12px; font-weight: 700; color: var(--dark-navy);">4. Pembahasan / Penjelasan Kunci Jawaban</label>
+              <small style="font-size: 11px; color: var(--text-muted);">Tinggi bertambah otomatis saat teks panjang</small>
+            </div>
+            <textarea name="discussion" id="modal-discussion" class="form-control form-control-auto" rows="1" oninput="autoExpand(this)" placeholder="Tuliskan pembahasan, trik cepat, atau materi pendukung (opsional)..."></textarea>
           </div>
 
-          <button type="submit" id="modal-submit-btn" class="btn btn-amber" style="margin-top: 4px; height: 40px; font-size: 13px;">
-            Simpan Soal
-          </button>
+          <!-- Bottom Actions -->
+          <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; padding-top: 14px; border-top: 1px solid #E2E8F0;">
+            <button type="button" onclick="closeQuestionEditor()" class="btn btn-secondary" style="width: auto; height: 42px; padding: 0 20px; font-weight: 600;">
+              Batal & Kembali
+            </button>
+            <button type="submit" id="modal-submit-btn" class="btn btn-amber" style="width: auto; height: 42px; padding: 0 24px; font-weight: 700;">
+              Simpan Soal
+            </button>
+          </div>
         </form>
       </div>
+
     </div>
 
     <!-- MODAL: Tambah / Edit Kategori -->
@@ -401,11 +453,13 @@ function togglePackageDetails() {
   }
 }
 
+// Auto-expand textarea: starts at 38px (1 line) and only expands when text exceeds 1 line
 function autoExpand(el) {
   if (!el) return;
-  el.style.height = 'auto';
-  const newH = Math.max(38, el.scrollHeight);
-  el.style.height = newH + 'px';
+  el.style.height = '38px';
+  if (el.scrollHeight > 38) {
+    el.style.height = el.scrollHeight + 'px';
+  }
 }
 
 function resetAllAutoExpands() {
@@ -414,34 +468,9 @@ function resetAllAutoExpands() {
   });
 }
 
-function openModal(id) {
-  document.getElementById(id).classList.add('open');
-  if (id === 'q-modal') {
-    setTimeout(resetAllAutoExpands, 50);
-  }
-}
-
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-
-function toggleModalQType() {
-  const type = document.getElementById('modal-q-type').value;
-  const pgWrapper = document.getElementById('modal-pg-wrapper');
-  const isianWrapper = document.getElementById('modal-isian-wrapper');
-
-  if (type === 'isian') {
-    pgWrapper.style.display = 'none';
-    isianWrapper.style.display = 'flex';
-  } else {
-    pgWrapper.style.display = 'flex';
-    isianWrapper.style.display = 'none';
-  }
-  setTimeout(resetAllAutoExpands, 50);
-}
-
-function openNewQuestionModal() {
-  document.getElementById('q-modal-title').innerText = 'Tambah Soal Baru';
+// Open / Close Full Page Question Editor (No Popups!)
+function openNewQuestionEditor() {
+  document.getElementById('q-editor-title').innerText = 'Tambah Butir Soal Premium Baru';
   document.getElementById('modal-q-id').value = '';
   document.getElementById('modal-q-num').value = '';
   document.getElementById('modal-narrative').value = '';
@@ -460,9 +489,23 @@ function openNewQuestionModal() {
   const rA = document.getElementById('radio-opt-A');
   if (rA) rA.checked = true;
 
-  document.getElementById('modal-submit-btn').innerText = 'Simpan Soal Baru';
-  openModal('q-modal');
+  document.getElementById('modal-submit-btn').innerText = 'Simpan Soal';
+  document.getElementById('editor-top-submit-btn').innerText = '💾 Simpan Soal';
+
+  // Switch views: hide list, show full-page editor
+  document.getElementById('section-question-list').style.display = 'none';
+  const editor = document.getElementById('section-question-editor');
+  editor.style.display = 'flex';
+  editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
   setTimeout(resetAllAutoExpands, 50);
+}
+
+function closeQuestionEditor() {
+  document.getElementById('section-question-editor').style.display = 'none';
+  const list = document.getElementById('section-question-list');
+  list.style.display = 'block';
+  list.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function editExistingQuestion(qId) {
@@ -473,7 +516,7 @@ function editExistingQuestion(qId) {
         const q = res.question;
         const opts = res.options;
 
-        document.getElementById('q-modal-title').innerText = `Edit Butir Soal #${q.question_number}`;
+        document.getElementById('q-editor-title').innerText = `Edit Butir Soal #${q.question_number}`;
         document.getElementById('modal-q-id').value = q.id;
         document.getElementById('modal-q-num').value = q.question_number;
         document.getElementById('modal-narrative').value = q.narrative;
@@ -520,7 +563,14 @@ function editExistingQuestion(qId) {
         }
 
         document.getElementById('modal-submit-btn').innerText = 'Perbarui Soal';
-        openModal('q-modal');
+        document.getElementById('editor-top-submit-btn').innerText = '💾 Perbarui Soal';
+
+        // Switch views: hide list, show full-page editor
+        document.getElementById('section-question-list').style.display = 'none';
+        const editor = document.getElementById('section-question-editor');
+        editor.style.display = 'flex';
+        editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
         setTimeout(resetAllAutoExpands, 60);
       } else {
         alert(res.message || 'Gagal mengambil data soal');
@@ -529,6 +579,29 @@ function editExistingQuestion(qId) {
     .catch(err => {
       alert('Terjadi kesalahan saat memuat soal.');
     });
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+function toggleModalQType() {
+  const type = document.getElementById('modal-q-type').value;
+  const pgWrapper = document.getElementById('modal-pg-wrapper');
+  const isianWrapper = document.getElementById('modal-isian-wrapper');
+
+  if (type === 'isian') {
+    pgWrapper.style.display = 'none';
+    isianWrapper.style.display = 'flex';
+  } else {
+    pgWrapper.style.display = 'flex';
+    isianWrapper.style.display = 'none';
+  }
+  setTimeout(resetAllAutoExpands, 50);
 }
 
 function markRemoveImage() {
