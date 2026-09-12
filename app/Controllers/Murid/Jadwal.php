@@ -16,24 +16,35 @@ class Jadwal extends BaseController
             'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
         ][date('l')] ?? 'Senin';
 
-        $selectedDay = $this->request->getGet('day') ?? $todayDay;
+        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $allSchedules = $scheduleModel->getSchedulesWithTentor();
 
-        // Today's first active class
-        $todayClass = $scheduleModel->where('day', $todayDay)->where('status', 'active')->first();
-        if (!$todayClass) {
-            $todayClass = $scheduleModel->where('status', 'active')->first();
+        $weeklySchedules = [];
+        foreach ($days as $d) {
+            $weeklySchedules[$d] = [];
+        }
+        foreach ($allSchedules as $sc) {
+            if (isset($weeklySchedules[$sc['day']])) {
+                $weeklySchedules[$sc['day']][] = $sc;
+            }
         }
 
-        // Schedules for selected day
-        $daySchedules = $scheduleModel->where('day', $selectedDay)->where('status', 'active')->orderBy('start_time', 'ASC')->findAll();
+        // Today's first active class
+        $todayClass = null;
+        if (!empty($weeklySchedules[$todayDay])) {
+            $todayClass = $weeklySchedules[$todayDay][0];
+        } elseif (!empty($allSchedules)) {
+            $todayClass = $allSchedules[0];
+        }
 
         return view('murid/jadwal/index', [
-            'title'        => 'Jadwal & Pembelajaran - TeKaPe.id',
-            'activeNav'    => 'jadwal',
-            'todayDay'     => $todayDay,
-            'selectedDay'  => $selectedDay,
-            'todayClass'   => $todayClass,
-            'daySchedules' => $daySchedules,
+            'title'           => 'Jadwal & Pembelajaran - TeKaPe.id',
+            'activeNav'       => 'jadwal',
+            'todayDay'        => $todayDay,
+            'days'            => $days,
+            'weeklySchedules' => $weeklySchedules,
+            'allSchedules'    => $allSchedules,
+            'todayClass'      => $todayClass,
         ]);
     }
 }

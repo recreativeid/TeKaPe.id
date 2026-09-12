@@ -125,6 +125,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
         $routes->match(['get', 'post'], 'payment', 'Admin\Pengaturan::payment');
         $routes->match(['get', 'post'], 'premium', 'Admin\Pengaturan::premium');
         $routes->match(['get', 'post'], 'keamanan', 'Admin\Pengaturan::keamanan');
+        $routes->post('saveSettings', 'Admin\Pengaturan::saveSettings');
+        $routes->post('updateSecurity', 'Admin\Pengaturan::updateSecurity');
     });
 });
 
@@ -216,14 +218,18 @@ $routes->group('murid', ['filter' => 'murid'], function ($routes) {
         $routes->get('hasil/(:num)', 'Murid\Soal::hasil/$1');
     });
 
-    // Payment Checkout
+    // Payment Checkout & Midtrans Snap
     $routes->group('payment', function ($routes) {
         $routes->get('/', 'Murid\Payment::index');
         $routes->get('(:num)', 'Murid\Payment::index');
+        $routes->post('snap-token', 'Murid\Payment::getSnapToken');
         $routes->post('process', 'Murid\Payment::process');
+        $routes->post('simulate-success', 'Murid\Payment::simulateSuccess');
+        $routes->post('finish', 'Murid\Payment::finish');
         $routes->get('success', 'Murid\Payment::success');
         $routes->get('success/(:num)', 'Murid\Payment::success');
     });
+    $routes->post('payment/midtrans-notification', 'Murid\Payment::midtransNotification');
 
     // Jadwal Kelas Online & Absensi
     $routes->group('jadwal', function ($routes) {

@@ -173,8 +173,8 @@
           <span id="review-dist-cat" style="color: var(--dark-navy); font-weight: 600;">TWK: 0 | TIU: 0 | TKP: 0</span>
         </div>
         <div style="display: flex; justify-content: space-between;">
-          <span>Tarif Layanan:</span>
-          <strong style="color: var(--warm-amber);">Rp <?= number_format($defaultPrice, 0, ',', '.') ?> (<?= esc($defaultDuration) ?> Hari)</strong>
+          <span>Model Akses:</span>
+          <strong style="color: var(--warm-amber);">All-Access Kedinasan (Langganan Bulanan)</strong>
         </div>
       </div>
     </div>

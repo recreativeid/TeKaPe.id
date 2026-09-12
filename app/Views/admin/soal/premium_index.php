@@ -83,7 +83,7 @@
           Edit Paket
         </h2>
         <p style="font-size: 13px; color: var(--text-muted);">
-          Kelola bank soal, nomor, opsi jawaban, dan tarif paket Premium.
+          Kelola bank soal, nomor butir soal, opsi jawaban, dan kategori paket Premium.
         </p>
       </div>
       <a href="<?= base_url("{$rolePrefix}/soal/premium/edit") ?>" class="btn btn-secondary" style="height: 44px; font-size: 13px;">
@@ -123,9 +123,9 @@
                 <?= esc($pkg['title']) ?>
               </span>
               <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-muted);">
-                <span><?= $pkg['question_count'] ?? 0 ?> Soal</span>
+                <span>📝 <?= $pkg['question_count'] ?? 0 ?> Soal CAT</span>
                 <span>•</span>
-                <span style="color: var(--warm-amber); font-weight: 700;">Rp <?= number_format($pkg['price'], 0, ',', '.') ?></span>
+                <span class="badge badge-amber" style="padding: 1px 6px; font-size: 10px; font-weight: 700;">All-Access Kedinasan</span>
                 <span>•</span>
                 <span class="badge <?= $pkg['status'] === 'active' ? 'badge-sage' : 'badge-peach' ?>" style="padding: 1px 6px; font-size: 10px;">
                   <?= ucfirst($pkg['status']) ?>

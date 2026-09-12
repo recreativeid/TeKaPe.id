@@ -48,8 +48,71 @@
     </div>
   <?php endif; ?>
 
-  <!-- Schedule Cards -->
+  <!-- WEEKLY TIMETABLE TABLE (Senin - Minggu) -->
   <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+        Tabel Mingguan Keseluruhan (Senin – Minggu)
+      </h2>
+      <span style="font-size: 11px; color: var(--text-muted);">
+        Klik sesi jadwal untuk melihat detail link kelas
+      </span>
+    </div>
+
+    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 8px;">
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(160px, 1fr)); gap: 8px; min-width: 1050px;">
+        <?php foreach ($days as $d): ?>
+          <?php $isSelected = ($d === $selectedDay); ?>
+          <div style="display: flex; flex-direction: column; gap: 6px; background: <?= $isSelected ? '#FFFDF5' : '#FAFAFA' ?>; border: 1.5px solid <?= $isSelected ? 'var(--warm-amber)' : 'var(--border-color)' ?>; border-radius: var(--radius-md); padding: 10px 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid <?= $isSelected ? '#FDE68A' : 'var(--border-light)' ?>; padding-bottom: 6px;">
+              <strong style="font-size: 13px; color: var(--dark-navy);"><?= $d ?></strong>
+              <span style="font-size: 10px; color: var(--text-muted);"><?= count($weeklySchedules[$d] ?? []) ?> Sesi</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 6px;">
+              <?php if (!empty($weeklySchedules[$d])): ?>
+                <?php foreach ($weeklySchedules[$d] as $sc): ?>
+                  <div class="schedule-admin-card"
+                       onclick="openAdminScheduleModal(<?= htmlspecialchars(json_encode([
+                         'subject'      => $sc['subject'],
+                         'title'        => 'Kelas Pendalaman ' . $sc['subject'],
+                         'day'          => $sc['day'],
+                         'time'         => $sc['start_time'] . ' – ' . $sc['end_time'] . ' WIB',
+                         'tentor'       => $sc['tentor_name'] ?? 'Tentor',
+                         'platform'     => $sc['platform'],
+                         'meeting_link' => $sc['meeting_link'],
+                       ]), ENT_QUOTES, 'UTF-8') ?>)"
+                       style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 8px; cursor: pointer; transition: all 0.15s ease;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                      <span class="badge <?= $sc['subject'] === 'TWK' ? 'badge-navy' : ($sc['subject'] === 'TIU' ? 'badge-amber' : 'badge-sage') ?>" style="font-size: 9px; padding: 1px 5px;">
+                        <?= esc($sc['subject']) ?>
+                      </span>
+                      <span style="font-size: 9px; color: #2563EB; font-weight: 700;"><?= esc($sc['platform']) ?></span>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 700; color: var(--dark-navy); line-height: 1.2;">
+                      <?= esc($sc['start_time']) ?> – <?= esc($sc['end_time']) ?>
+                    </div>
+                    <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                      <?= esc($sc['tentor_name'] ?? 'Tentor') ?>
+                    </div>
+                  </div>
+                <?php endforeach; ?>
+              <?php else: ?>
+                <span style="font-size: 10px; color: var(--text-muted); text-align: center; padding: 14px 0;">Kosong</span>
+              <?php endif; ?>
+            </div>
+          </div>
+        <?php endforeach; ?>
+      </div>
+    </div>
+  </div>
+
+  <!-- Schedule Detail Cards for Selected Day -->
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 6px;">
+    <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin: 0;">
+      Daftar Sesi Hari <?= esc($selectedDay) ?>
+    </h3>
+
     <?php if (!empty($schedules)): ?>
       <?php foreach ($schedules as $idx => $sc): ?>
         <div class="card <?= $idx === 0 ? 'card-navy' : '' ?>" style="padding: 16px; gap: 8px;">
@@ -85,7 +148,7 @@
                 <?= esc($sc['meeting_link']) ?>
               </span>
               <a href="<?= esc($sc['meeting_link']) ?>" target="_blank" class="btn <?= $idx === 0 ? 'btn-secondary' : 'btn-primary' ?> btn-sm" style="height: 32px; font-weight: 700;">
-                Masuk
+                Masuk Ruang Kelas
               </a>
             </div>
           <?php endif; ?>
@@ -99,4 +162,74 @@
   </div>
 
 </div>
+
+<!-- Admin Detail Modal -->
+<div id="admin-schedule-modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 16px;">
+  <div style="background: #FFFFFF; border-radius: var(--radius-lg); max-width: 480px; width: 100%; padding: 22px; position: relative; display: flex; flex-direction: column; gap: 14px;">
+    <button onclick="closeAdminScheduleModal()" style="position: absolute; right: 16px; top: 16px; background: #F1F5F9; border: none; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-weight: 700;">✕</button>
+
+    <div>
+      <span id="adm-modal-subject-badge" class="badge badge-navy" style="font-size: 10px;">TWK</span>
+      <h3 id="adm-modal-title" style="font-family: 'Outfit', sans-serif; font-size: 18px; font-weight: 800; color: var(--dark-navy); margin: 4px 0 0 0;">Kelas Pendalaman</h3>
+    </div>
+
+    <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 14px; display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
+      <div><span style="color: var(--text-muted);">Hari & Jam:</span> <strong id="adm-modal-time" style="color: var(--dark-navy);">Senin, 19:00 - 20:00 WIB</strong></div>
+      <div><span style="color: var(--text-muted);">Tentor:</span> <strong id="adm-modal-tentor" style="color: var(--warm-amber);">Bima Sakti, S.Pd</strong></div>
+      <div><span style="color: var(--text-muted);">Platform:</span> <strong id="adm-modal-platform" style="color: #2563EB;">Google Meet</strong></div>
+    </div>
+
+    <div>
+      <span style="font-size: 11px; font-weight: 700; color: var(--dark-navy);">Link Pertemuan:</span>
+      <div style="background: #FFFDF5; border: 1px solid #FDE68A; padding: 8px 10px; border-radius: var(--radius-sm); font-size: 11px; color: #1D4ED8; word-break: break-all; margin-top: 4px;">
+        <span id="adm-modal-link-text">https://...</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 8px; margin-top: 4px;">
+      <a id="adm-modal-join-btn" href="#" target="_blank" class="btn btn-amber" style="flex: 1; height: 42px; font-size: 13px; font-weight: 700; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 6px;">
+        Buka Link Kelas &rarr;
+      </a>
+      <button onclick="closeAdminScheduleModal()" class="btn btn-secondary" style="height: 42px; font-size: 13px;">Tutup</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function openAdminScheduleModal(data) {
+  document.getElementById('adm-modal-title').innerText = data.title;
+  document.getElementById('adm-modal-subject-badge').innerText = data.subject;
+  document.getElementById('adm-modal-subject-badge').className = 'badge ' + (data.subject === 'TWK' ? 'badge-navy' : (data.subject === 'TIU' ? 'badge-amber' : 'badge-sage'));
+  document.getElementById('adm-modal-time').innerText = data.day + ', ' + data.time;
+  document.getElementById('adm-modal-tentor').innerText = data.tentor;
+  document.getElementById('adm-modal-platform').innerText = data.platform;
+  document.getElementById('adm-modal-link-text').innerText = data.meeting_link || 'Belum diisi';
+
+  const joinBtn = document.getElementById('adm-modal-join-btn');
+  if (data.meeting_link) {
+    joinBtn.href = data.meeting_link;
+    joinBtn.style.display = 'flex';
+  } else {
+    joinBtn.style.display = 'none';
+  }
+
+  document.getElementById('admin-schedule-modal-overlay').style.display = 'flex';
+}
+
+function closeAdminScheduleModal() {
+  document.getElementById('admin-schedule-modal-overlay').style.display = 'none';
+}
+
+document.getElementById('admin-schedule-modal-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAdminScheduleModal();
+});
+</script>
+
+<style>
+.schedule-admin-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--warm-amber) !important;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06) !important;
+}
+</style>
 <?= $this->endSection() ?>

@@ -45,6 +45,18 @@ class Jadwal extends BaseController
         }
         $tentors = (new \App\Models\UserModel())->getTentors();
 
+        $days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        $allSchedules = $this->scheduleModel->getSchedulesWithTentor(null, $tentorId);
+        $weeklySchedules = [];
+        foreach ($days as $d) {
+            $weeklySchedules[$d] = [];
+        }
+        foreach ($allSchedules as $sc) {
+            if (isset($weeklySchedules[$sc['day']])) {
+                $weeklySchedules[$sc['day']][] = $sc;
+            }
+        }
+
         return view('admin/jadwal/lihat', [
             'title'            => 'Jadwal Mingguan - TeKaPe.id',
             'activeNav'        => 'jadwal',
@@ -53,6 +65,8 @@ class Jadwal extends BaseController
             'schedules'        => $schedules,
             'tentors'          => $tentors,
             'selectedTentorId' => $tentorId,
+            'days'             => $days,
+            'weeklySchedules'  => $weeklySchedules,
         ]);
     }
 

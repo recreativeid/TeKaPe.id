@@ -97,10 +97,89 @@
       <span>Enkripsi 256-bit aman & aktivasi otomatis seketika.</span>
     </div>
 
-    <button type="submit" class="btn btn-amber" style="height: 50px; font-size: 15px; font-weight: 700;">
-      Bayar Sekarang Rp <?= number_format($price, 0, ',', '.') ?> &rarr;
-    </button>
+    <!-- Hidden finish form for Snap callback -->
+    <form id="snap-finish-form" action="<?= base_url('murid/payment/finish') ?>" method="post" style="display: none;">
+      <?= csrf_field() ?>
+      <input type="hidden" name="order_id" id="snap-order-id" value="">
+      <input type="hidden" name="payment_type" id="snap-payment-type" value="Midtrans Snap">
+    </form>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <button type="button" id="btn-pay-midtrans" class="btn btn-amber" style="height: 52px; font-size: 15px; font-weight: 700;">
+        ⚡ Bayar Otomatis via Midtrans (Rp <?= number_format($price, 0, ',', '.') ?>) &rarr;
+      </button>
+
+      <form action="<?= base_url('murid/payment/simulate-success') ?>" method="post">
+        <?= csrf_field() ?>
+        <input type="hidden" name="payment_method" value="Simulasi Instan (Sandbox)">
+        <button type="submit" class="btn btn-secondary" style="width: 100%; height: 42px; font-size: 13px; font-weight: 600; color: var(--dark-navy);">
+          ✓ Simulasi Bayar Instan (Langsung Buka Kunci Semua Paket)
+        </button>
+      </form>
+    </div>
   </form>
 
 </div>
+
+<!-- Midtrans Snap Script -->
+<script type="text/javascript" src="<?= ($env === 'production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' ?>" data-client-key="<?= esc($clientKey) ?>"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const payBtn = document.getElementById('btn-pay-midtrans');
+  if (!payBtn) return;
+
+  payBtn.addEventListener('click', async function(e) {
+    e.preventDefault();
+    payBtn.disabled = true;
+    payBtn.innerText = 'Menyiapkan Pembayaran Midtrans...';
+
+    try {
+      const response = await fetch('<?= base_url('murid/payment/snap-token') ?>', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({
+          '<?= csrf_token() ?>': '<?= csrf_hash() ?>'
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success' && data.snap_token && typeof window.snap !== 'undefined') {
+        window.snap.pay(data.snap_token, {
+          onSuccess: function(result) {
+            document.getElementById('snap-order-id').value = data.order_id;
+            document.getElementById('snap-payment-type').value = result.payment_type || 'Midtrans Snap';
+            document.getElementById('snap-finish-form').submit();
+          },
+          onPending: function(result) {
+            document.getElementById('snap-order-id').value = data.order_id;
+            document.getElementById('snap-finish-form').submit();
+          },
+          onError: function(result) {
+            alert('Pembayaran gagal atau dibatalkan. Silakan coba kembali.');
+            payBtn.disabled = false;
+            payBtn.innerText = '⚡ Bayar Otomatis via Midtrans (Rp <?= number_format($price, 0, ',', '.') ?>) →';
+          },
+          onClose: function() {
+            payBtn.disabled = false;
+            payBtn.innerText = '⚡ Bayar Otomatis via Midtrans (Rp <?= number_format($price, 0, ',', '.') ?>) →';
+          }
+        });
+      } else {
+        // Direct Sandbox / Simulation Fallback
+        document.getElementById('snap-order-id').value = data.order_id || ('TKP-' + Math.random().toString(36).substring(2, 9).toUpperCase());
+        document.getElementById('snap-finish-form').submit();
+      }
+    } catch (err) {
+      console.error('Midtrans Snap error:', err);
+      // Fallback submit
+      document.getElementById('snap-finish-form').submit();
+    }
+  });
+});
+</script>
 <?= $this->endSection() ?>

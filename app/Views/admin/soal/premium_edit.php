@@ -48,9 +48,10 @@
             </p>
 
             <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 10px; margin-top: 4px;">
-              <span style="font-size: 12px; color: var(--warm-amber); font-weight: 700;">
-                Rp <?= number_format($pkg['price'], 0, ',', '.') ?> • <?= $pkg['question_count'] ?? 0 ?> Soal
-              </span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="badge badge-amber" style="font-size: 10px; padding: 2px 6px;">All-Access Kedinasan</span>
+                <span style="font-size: 12px; color: var(--text-muted);">• 📝 <?= $pkg['question_count'] ?? 0 ?> Soal CAT</span>
+              </div>
               <a href="<?= base_url("{$rolePrefix}/soal/premium/edit/{$pkg['id']}") ?>" class="btn btn-amber btn-sm" style="font-weight: 700;">
                 Buka Editor &rarr;
               </a>
