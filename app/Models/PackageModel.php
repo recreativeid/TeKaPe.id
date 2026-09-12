@@ -13,13 +13,17 @@ class PackageModel extends Model
     protected $allowedFields    = ['title', 'description', 'type', 'price', 'duration_days', 'status', 'created_by', 'created_at', 'updated_at'];
     protected $useTimestamps    = false;
 
-    public function getPackagesWithType($type = null)
+    public function getPackagesWithType($type = null, $createdBy = null)
     {
         $builder = $this->db->table('packages p');
-        $builder->select('p.*, COUNT(q.id) as question_count');
+        $builder->select('p.*, COUNT(q.id) as question_count, u.name as author_name');
         $builder->join('questions q', 'q.package_id = p.id', 'left');
+        $builder->join('users u', 'u.id = p.created_by', 'left');
         if ($type !== null) {
             $builder->where('p.type', $type);
+        }
+        if ($createdBy !== null) {
+            $builder->where('p.created_by', $createdBy);
         }
         $builder->groupBy('p.id');
         $builder->orderBy('p.id', 'DESC');

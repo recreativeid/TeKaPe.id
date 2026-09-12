@@ -30,7 +30,7 @@
     </div>
   <?php endif; ?>
 
-  <form action="<?= base_url("admin/soal/saveScoring") ?>" method="post" style="display: flex; flex-direction: column; gap: 16px;">
+  <form action="<?= base_url("{$rolePrefix}/soal/save-scoring") ?>" method="post" style="display: flex; flex-direction: column; gap: 16px;">
     <?= csrf_field() ?>
     <input type="hidden" name="package_id" value="<?= $activePackage['id'] ?? 3 ?>">
 

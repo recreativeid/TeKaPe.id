@@ -9,8 +9,8 @@
 
   <div style="text-align: center; display: flex; flex-direction: column; gap: 6px;">
     <h1 class="page-title" style="font-size: 20px;">Konfirmasi Password</h1>
-    <p class="page-subtitle" style="max-width: 290px; line-height: 1.5;">
-      Masukkan password kembali untuk mengakses pengelolaan soal.
+    <p class="page-subtitle" style="max-width: 320px; line-height: 1.5;">
+      Masukkan password akun Anda (<strong><?= esc(session()->get('user_name') ?? session()->get('username')) ?></strong>) untuk membuka akses pengelolaan soal.
     </p>
   </div>
 
@@ -20,7 +20,7 @@
       <input type="hidden" name="redirect_target" value="<?= esc($redirectTarget) ?>">
 
       <div class="form-group">
-        <label class="form-label" for="verify-password">Password Anda</label>
+        <label class="form-label" for="verify-password">Password Akun Anda</label>
         <div class="input-password-wrapper">
           <input type="password" name="password" id="verify-password" class="form-control" placeholder="Masukkan password login Anda" required autofocus>
           <button type="button" class="password-toggle-btn" title="Lihat Password">
@@ -30,10 +30,10 @@
       </div>
 
       <button type="submit" class="btn btn-primary" style="margin-top: 4px;">
-        Lanjutkan
+        Lanjutkan ke Kelola Soal &rarr;
       </button>
 
-      <a href="<?= session()->get('user_role') === 'admin' ? base_url('admin/dashboard') : base_url('auth/login') ?>" class="btn btn-secondary" style="height: 42px; font-size: 13px;">
+      <a href="<?= session()->get('user_role') === 'tentor' ? base_url('tentor/dashboard') : base_url('admin/dashboard') ?>" class="btn btn-secondary" style="height: 42px; font-size: 13px;">
         Batal
       </a>
     </form>

@@ -31,7 +31,7 @@
     </span>
   </div>
 
-  <form id="tambah-paket-form" action="<?= base_url("admin/soal/savePackage") ?>" method="post">
+  <form id="tambah-paket-form" action="<?= base_url("{$rolePrefix}/soal/savePackage") ?>" method="post">
     <?= csrf_field() ?>
     <input type="hidden" name="type" value="free">
     <input type="hidden" name="price" value="0">
@@ -69,7 +69,7 @@
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
           2. Daftar Soal (<span id="question-count-badge">0</span>)
         </h2>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleEditor()" style="font-weight: 700;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="openNewEditor()" style="font-weight: 700;">
           + Tambah Soal
         </button>
       </div>
@@ -77,12 +77,14 @@
       <!-- In-Page Expandable Question Creation Interface -->
       <div id="question-editor-card" style="display: none; background: #F8FAFC; border: 1.5px solid #CBD5E1; border-radius: var(--radius-md); padding: 16px; margin-bottom: 14px; flex-direction: column; gap: 12px;">
         <div style="display: flex; align-items: center; justify-content: space-between;">
-          <span style="font-size: 13px; font-weight: 700; color: var(--dark-navy);">Editor Butir Pertanyaan</span>
+          <span id="editor-badge-title" style="font-size: 13px; font-weight: 700; color: var(--dark-navy);">Editor Butir Pertanyaan</span>
           <button type="button" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; font-weight: 600;" onclick="toggleEditor()">Tutup</button>
         </div>
+        <input type="hidden" id="editing-index" value="-1">
 
+        <!-- 1. Kategori Soal -->
         <div class="form-group">
-          <label class="form-label">Kategori Soal</label>
+          <label class="form-label">1. Kategori Soal</label>
           <select id="editor-cat" class="form-control">
             <option value="TWK">Tes Wawasan Kebangsaan (TWK)</option>
             <option value="TIU">Tes Inteligensia Umum (TIU)</option>
@@ -98,18 +100,30 @@
           </select>
         </div>
 
+        <!-- 2. Narasi Soal -->
         <div class="form-group">
-          <label class="form-label">Narasi Soal</label>
-          <textarea id="editor-narrative" class="form-control" rows="3" placeholder="Ketik narasi soal..."></textarea>
+          <label class="form-label">2. Narasi Soal</label>
+          <textarea id="editor-narrative" class="form-control" rows="3" placeholder="Ketik narasi pertanyaan lengkap..."></textarea>
         </div>
 
-        <!-- Pilihan Ganda Section (A to E with per-option scores & correct answer) -->
+        <!-- Upload Gambar Soal -->
+        <div class="form-group">
+          <label class="form-label">Upload Gambar Soal (Opsional)</label>
+          <input type="file" id="editor-image-file" accept="image/*" class="form-control" style="padding: 6px;" onchange="previewEditorImage(this)">
+          <div id="editor-image-preview-wrapper" style="display: none; margin-top: 6px; align-items: center; gap: 8px;">
+            <img id="editor-img-preview" src="" style="max-height: 100px; max-width: 100%; border-radius: 4px; border: 1px solid var(--border-color);">
+            <button type="button" onclick="removeEditorImage()" class="btn btn-secondary btn-sm" style="color: #DC2626; height: 28px; font-size: 11px;">Hapus Gambar</button>
+          </div>
+        </div>
+
+        <!-- 3. Pilihan Ganda / Isian Section -->
         <div id="pg-options-wrapper" style="display: flex; flex-direction: column; gap: 8px;">
-          <label class="form-label" style="margin-bottom: 2px;">Pilihan Jawaban & Skor:</label>
+          <label class="form-label" style="margin-bottom: 2px;">3. Pilihan Jawaban (Tentukan Skor Tiap Opsi & Kunci Jawaban):</label>
+          <p style="font-size: 11px; color: var(--text-muted); margin: 0;">Pilih radio button untuk jawaban benar. Tentukan skor untuk masing-masing opsi (misal TKP skala 1-5, TWK/TIU 5 & 0).</p>
 
           <?php foreach (['A', 'B', 'C', 'D', 'E'] as $opt): ?>
             <div style="display: flex; align-items: center; gap: 6px; background: #FFFFFF; padding: 8px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
-              <input type="radio" name="correct_opt_temp" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Kunci Jawaban">
+              <input type="radio" name="correct_opt_temp" value="<?= $opt ?>" <?= $opt === 'A' ? 'checked' : '' ?> title="Pilih sebagai Kunci Jawaban Benar">
               <span style="font-weight: 700; font-size: 13px; width: 16px;"><?= $opt ?></span>
               <input type="text" id="opt-text-<?= $opt ?>" class="form-control" style="height: 36px; font-size: 12px;" placeholder="Teks opsi <?= $opt ?>">
               <input type="number" id="opt-score-<?= $opt ?>" class="form-control" style="height: 36px; width: 68px; font-size: 12px; text-align: center;" value="<?= $opt === 'A' ? '5' : '0' ?>" placeholder="Skor" title="Skor opsi ini">
@@ -120,17 +134,18 @@
         <!-- Isian Singkat Section -->
         <div id="isian-wrapper" style="display: none; flex-direction: column; gap: 8px;">
           <div class="form-group">
-            <label class="form-label">Kunci Jawaban Isian</label>
+            <label class="form-label">3. Kunci Jawaban Isian</label>
             <input type="text" id="editor-expected" class="form-control" placeholder="Jawaban yang diharapkan">
           </div>
         </div>
 
+        <!-- 4. Pembahasan Lengkap -->
         <div class="form-group">
-          <label class="form-label">Pembahasan Lengkap</label>
-          <textarea id="editor-discussion" class="form-control" rows="2" placeholder="Tuliskan analisis atau kunci pembahasan..."></textarea>
+          <label class="form-label">4. Pembahasan Lengkap</label>
+          <textarea id="editor-discussion" class="form-control" rows="2" placeholder="Tuliskan analisis, trik, atau kunci pembahasan..."></textarea>
         </div>
 
-        <button type="button" class="btn btn-primary btn-sm" onclick="addQuestionToList()" style="height: 40px; font-size: 13px;">
+        <button type="button" id="btn-submit-q" class="btn btn-primary btn-sm" onclick="saveQuestionToList()" style="height: 40px; font-size: 13px;">
           + Masukkan ke Daftar Soal
         </button>
       </div>
@@ -178,10 +193,20 @@
 <?= $this->section('scripts') ?>
 <script>
 let questionsData = [];
+let currentBase64Image = null;
 
 function toggleEditor() {
   const card = document.getElementById('question-editor-card');
   card.style.display = (card.style.display === 'none' || card.style.display === '') ? 'flex' : 'none';
+}
+
+function openNewEditor() {
+  document.getElementById('editing-index').value = '-1';
+  document.getElementById('editor-badge-title').innerText = 'Editor Butir Pertanyaan (Baru)';
+  document.getElementById('btn-submit-q').innerText = '+ Masukkan ke Daftar Soal';
+  resetEditorInputs();
+  const card = document.getElementById('question-editor-card');
+  card.style.display = 'flex';
 }
 
 function toggleQuestionTypeFields() {
@@ -198,7 +223,39 @@ function toggleQuestionTypeFields() {
   }
 }
 
-function addQuestionToList() {
+function previewEditorImage(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      currentBase64Image = e.target.result;
+      document.getElementById('editor-img-preview').src = currentBase64Image;
+      document.getElementById('editor-image-preview-wrapper').style.display = 'flex';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
+
+function removeEditorImage() {
+  currentBase64Image = null;
+  document.getElementById('editor-image-file').value = '';
+  document.getElementById('editor-img-preview').src = '';
+  document.getElementById('editor-image-preview-wrapper').style.display = 'none';
+}
+
+function resetEditorInputs() {
+  document.getElementById('editor-narrative').value = '';
+  document.getElementById('editor-discussion').value = '';
+  document.getElementById('editor-expected').value = '';
+  removeEditorImage();
+  ['A', 'B', 'C', 'D', 'E'].forEach(lbl => {
+    document.getElementById(`opt-text-${lbl}`).value = '';
+    document.getElementById(`opt-score-${lbl}`).value = (lbl === 'A') ? '5' : '0';
+  });
+  const radioA = document.querySelector('input[name="correct_opt_temp"][value="A"]');
+  if (radioA) radioA.checked = true;
+}
+
+function saveQuestionToList() {
   const narrative = document.getElementById('editor-narrative').value.trim();
   if (!narrative) {
     alert('Narasi soal tidak boleh kosong.');
@@ -208,12 +265,14 @@ function addQuestionToList() {
   const category = document.getElementById('editor-cat').value;
   const type = document.getElementById('editor-type').value;
   const discussion = document.getElementById('editor-discussion').value.trim();
+  const editIdx = parseInt(document.getElementById('editing-index').value);
 
   let qObj = {
     category: category,
     type: type,
     narrative: narrative,
     discussion: discussion,
+    image_url: currentBase64Image,
     expected_answer: '',
     options: []
   };
@@ -235,17 +294,57 @@ function addQuestionToList() {
     qObj.expected_answer = document.getElementById('editor-expected').value.trim();
   }
 
-  questionsData.push(qObj);
-  renderQuestionsList();
+  if (editIdx >= 0 && editIdx < questionsData.length) {
+    questionsData[editIdx] = qObj;
+  } else {
+    questionsData.push(qObj);
+  }
 
-  // Reset editor
-  document.getElementById('editor-narrative').value = '';
-  document.getElementById('editor-discussion').value = '';
-  document.getElementById('editor-expected').value = '';
-  ['A', 'B', 'C', 'D', 'E'].forEach(lbl => {
-    document.getElementById(`opt-text-${lbl}`).value = '';
-  });
+  renderQuestionsList();
+  resetEditorInputs();
   toggleEditor();
+}
+
+function editDraftQuestion(index) {
+  const q = questionsData[index];
+  if (!q) return;
+
+  document.getElementById('editing-index').value = index;
+  document.getElementById('editor-badge-title').innerText = `Edit Butir Soal #${index + 1}`;
+  document.getElementById('btn-submit-q').innerText = 'Perbarui Butir Soal';
+
+  document.getElementById('editor-cat').value = q.category;
+  document.getElementById('editor-type').value = q.type;
+  toggleQuestionTypeFields();
+  document.getElementById('editor-narrative').value = q.narrative;
+  document.getElementById('editor-discussion').value = q.discussion || '';
+
+  if (q.image_url) {
+    currentBase64Image = q.image_url;
+    document.getElementById('editor-img-preview').src = currentBase64Image;
+    document.getElementById('editor-image-preview-wrapper').style.display = 'flex';
+  } else {
+    removeEditorImage();
+  }
+
+  if (q.type === 'pilihan_ganda' && q.options) {
+    q.options.forEach(opt => {
+      const txtInp = document.getElementById(`opt-text-${opt.label}`);
+      const scoreInp = document.getElementById(`opt-score-${opt.label}`);
+      if (txtInp) txtInp.value = opt.text;
+      if (scoreInp) scoreInp.value = opt.score;
+      if (opt.is_correct) {
+        const r = document.querySelector(`input[name="correct_opt_temp"][value="${opt.label}"]`);
+        if (r) r.checked = true;
+      }
+    });
+  } else {
+    document.getElementById('editor-expected').value = q.expected_answer || '';
+  }
+
+  const card = document.getElementById('question-editor-card');
+  card.style.display = 'flex';
+  card.scrollIntoView({ behavior: 'smooth' });
 }
 
 function removeQuestion(index) {
@@ -278,18 +377,22 @@ function renderQuestionsList() {
   questionsData.forEach((q, idx) => {
     counts[q.category] = (counts[q.category] || 0) + 1;
     html += `
-      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;">
-        <div style="display: flex; flex-direction: column; gap: 2px;">
+      <div style="background: #FFFFFF; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between;">
           <div style="display: flex; align-items: center; gap: 6px;">
             <span style="font-weight: 800; font-size: 12px; color: var(--dark-navy);">#${idx + 1}</span>
             <span class="badge badge-navy" style="font-size: 10px;">${q.category}</span>
             <span style="font-size: 11px; color: var(--text-muted);">${q.type === 'pilihan_ganda' ? 'Pilihan Ganda' : 'Isian'}</span>
           </div>
-          <p style="font-size: 12px; color: var(--dark-navy); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
-            ${q.narrative}
-          </p>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="editDraftQuestion(${idx})" style="background: none; border: none; color: var(--dark-navy); cursor: pointer; font-size: 11px; font-weight: 700;">Edit</button>
+            <button type="button" onclick="removeQuestion(${idx})" style="background: none; border: none; color: #DC2626; cursor: pointer; font-size: 11px; font-weight: 700;">Hapus</button>
+          </div>
         </div>
-        <button type="button" onclick="removeQuestion(${idx})" style="background: none; border: none; color: #DC2626; cursor: pointer; font-size: 11px; font-weight: 700;">Hapus</button>
+        <p style="font-size: 12px; color: var(--dark-navy); margin: 0; line-height: 1.45;">
+          ${q.narrative}
+        </p>
+        ${q.image_url ? `<img src="${q.image_url}" style="max-height: 80px; max-width: 140px; border-radius: 4px; border: 1px solid var(--border-light); object-fit: contain;">` : ''}
       </div>
     `;
   });

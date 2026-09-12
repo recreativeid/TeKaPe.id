@@ -18,7 +18,7 @@ class SoalAuthFilter implements FilterInterface
         // Check if secondary password has been verified
         if (!$session->get('soal_auth_verified')) {
             $uri = uri_string();
-            return redirect()->to(base_url('auth/verifyPassword?next=' . urlencode($uri)));
+            return redirect()->to(base_url('auth/verify-password?next=' . urlencode($uri)));
         }
     }
 

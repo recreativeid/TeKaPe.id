@@ -29,6 +29,23 @@ class Soal extends BaseController
         $this->settingModel  = new SettingModel();
     }
 
+    protected function getTentorFilter()
+    {
+        return session()->get('user_role') === 'tentor' ? (int) session()->get('user_id') : null;
+    }
+
+    protected function checkPackagePermission($packageId)
+    {
+        if (session()->get('user_role') === 'admin') {
+            return true;
+        }
+        $pkg = $this->packageModel->find($packageId);
+        if (!$pkg || (int)$pkg['created_by'] !== (int)session()->get('user_id')) {
+            return false;
+        }
+        return true;
+    }
+
     // Prompt 03 — Main Kelola Soal Gate
     public function index()
     {
@@ -46,7 +63,7 @@ class Soal extends BaseController
     // Prompt 04 — Paket Free Action Selector
     public function free()
     {
-        $packages = $this->packageModel->getPackagesWithType('free');
+        $packages = $this->packageModel->getPackagesWithType('free', $this->getTentorFilter());
 
         return view('admin/soal/free_index', [
             'title'     => 'Paket Soal Free - TeKaPe.id',
@@ -71,7 +88,7 @@ class Soal extends BaseController
     public function freeEdit($packageId = null)
     {
         $search = $this->request->getGet('q');
-        $packages = $this->packageModel->getPackagesWithType('free');
+        $packages = $this->packageModel->getPackagesWithType('free', $this->getTentorFilter());
 
         if ($search) {
             $packages = array_filter($packages, function($p) use ($search) {
@@ -81,6 +98,10 @@ class Soal extends BaseController
 
         $selectedPackage = null;
         if ($packageId) {
+            if (!$this->checkPackagePermission($packageId)) {
+                return redirect()->to(base_url((session()->get('user_role') === 'tentor' ? 'tentor' : 'admin') . '/soal/free/edit'))
+                    ->with('error', 'Anda tidak memiliki hak akses untuk mengedit paket ini.');
+            }
             $selectedPackage = $this->packageModel->getPackageWithQuestions($packageId);
         }
 
@@ -98,10 +119,14 @@ class Soal extends BaseController
     // Prompt 07 — Sistem Penilaian Free
     public function freePenilaian($packageId = null)
     {
-        $packages = $this->packageModel->getPackagesWithType('free');
+        $packages = $this->packageModel->getPackagesWithType('free', $this->getTentorFilter());
         $activePackage = null;
 
         if ($packageId) {
+            if (!$this->checkPackagePermission($packageId)) {
+                return redirect()->to(base_url((session()->get('user_role') === 'tentor' ? 'tentor' : 'admin') . '/soal/free/penilaian'))
+                    ->with('error', 'Anda tidak memiliki hak akses untuk paket ini.');
+            }
             $activePackage = $this->packageModel->find($packageId);
         } elseif (!empty($packages)) {
             $activePackage = $packages[0];
@@ -130,7 +155,7 @@ class Soal extends BaseController
     // Prompt 08 — Paket Premium Action Selector
     public function premium()
     {
-        $packages = $this->packageModel->getPackagesWithType('premium');
+        $packages = $this->packageModel->getPackagesWithType('premium', $this->getTentorFilter());
         $settings = $this->settingModel->getMap();
 
         return view('admin/soal/premium_index', [
@@ -162,7 +187,7 @@ class Soal extends BaseController
     public function premiumEdit($packageId = null)
     {
         $search = $this->request->getGet('q');
-        $packages = $this->packageModel->getPackagesWithType('premium');
+        $packages = $this->packageModel->getPackagesWithType('premium', $this->getTentorFilter());
 
         if ($search) {
             $packages = array_filter($packages, function($p) use ($search) {
@@ -172,6 +197,10 @@ class Soal extends BaseController
 
         $selectedPackage = null;
         if ($packageId) {
+            if (!$this->checkPackagePermission($packageId)) {
+                return redirect()->to(base_url((session()->get('user_role') === 'tentor' ? 'tentor' : 'admin') . '/soal/premium/edit'))
+                    ->with('error', 'Anda tidak memiliki hak akses untuk mengedit paket ini.');
+            }
             $selectedPackage = $this->packageModel->getPackageWithQuestions($packageId);
         }
 
@@ -189,10 +218,14 @@ class Soal extends BaseController
     // Prompt 11 — Sistem Penilaian Premium
     public function premiumPenilaian($packageId = null)
     {
-        $packages = $this->packageModel->getPackagesWithType('premium');
+        $packages = $this->packageModel->getPackagesWithType('premium', $this->getTentorFilter());
         $activePackage = null;
 
         if ($packageId) {
+            if (!$this->checkPackagePermission($packageId)) {
+                return redirect()->to(base_url((session()->get('user_role') === 'tentor' ? 'tentor' : 'admin') . '/soal/premium/penilaian'))
+                    ->with('error', 'Anda tidak memiliki hak akses untuk paket ini.');
+            }
             $activePackage = $this->packageModel->find($packageId);
         } elseif (!empty($packages)) {
             $activePackage = $packages[0];
@@ -319,6 +352,10 @@ class Soal extends BaseController
     // Save Updated Package Details
     public function updatePackage($id)
     {
+        if (!$this->checkPackagePermission($id)) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk mengubah paket ini.');
+        }
+
         $package = $this->packageModel->find($id);
         if (!$package) {
             return redirect()->back()->with('error', 'Paket tidak ditemukan.');
@@ -342,16 +379,71 @@ class Soal extends BaseController
         return redirect()->back()->with('success', 'Informasi paket berhasil diperbarui!');
     }
 
+    // Delete Entire Package
+    public function deletePackage($id)
+    {
+        if (!$this->checkPackagePermission($id)) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menghapus paket ini.');
+        }
+
+        $package = $this->packageModel->find($id);
+        if (!$package) {
+            return redirect()->back()->with('error', 'Paket tidak ditemukan.');
+        }
+
+        // Delete options, questions, categories, scoring
+        $questions = $this->questionModel->where('package_id', $id)->findAll();
+        foreach ($questions as $q) {
+            $this->optionModel->where('question_id', $q['id'])->delete();
+        }
+        $this->questionModel->where('package_id', $id)->delete();
+        $this->categoryModel->where('package_id', $id)->delete();
+        $this->scoringModel->where('package_id', $id)->delete();
+        $this->packageModel->delete($id);
+
+        $rolePrefix = session()->get('user_role') === 'tentor' ? 'tentor' : 'admin';
+        $redirectUrl = $package['type'] === 'premium' ? "{$rolePrefix}/soal/premium" : "{$rolePrefix}/soal/free";
+        return redirect()->to(base_url($redirectUrl))->with('success', "Paket {$package['title']} berhasil dihapus.");
+    }
+
+    // Get Single Question Data as JSON for Edit Modal
+    public function getQuestionJson($id)
+    {
+        $question = $this->questionModel->find($id);
+        if (!$question) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Soal tidak ditemukan']);
+        }
+
+        if (!$this->checkPackagePermission($question['package_id'])) {
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Akses ditolak']);
+        }
+
+        $options = $this->optionModel->where('question_id', $id)->orderBy('option_label', 'ASC')->findAll();
+        $categories = $this->categoryModel->where('package_id', $question['package_id'])->findAll();
+
+        return $this->response->setJSON([
+            'status'     => 'success',
+            'question'   => $question,
+            'options'    => $options,
+            'categories' => $categories,
+        ]);
+    }
+
     // Add / Update a Single Question in Package
     public function saveQuestion()
     {
         $packageId  = $this->request->getPost('package_id');
+        if (!$this->checkPackagePermission($packageId)) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses ke paket ini.');
+        }
+
         $questionId = $this->request->getPost('question_id');
         $catCode    = $this->request->getPost('category_code') ?? 'TWK';
         $type       = $this->request->getPost('type') ?? 'pilihan_ganda';
         $narrative  = trim($this->request->getPost('narrative') ?? '');
         $discussion = trim($this->request->getPost('discussion') ?? '');
         $expected   = trim($this->request->getPost('expected_answer') ?? '');
+        $qNumber    = $this->request->getPost('question_number');
 
         // Find or create category for this package
         $category = $this->categoryModel->where('package_id', $packageId)->where('code', $catCode)->first();
@@ -368,14 +460,23 @@ class Soal extends BaseController
             $catId = $category['id'];
         }
 
+        // Ensure upload directory exists
+        $uploadDir = FCPATH . 'uploads/questions';
+        if (!is_dir($uploadDir)) {
+            @mkdir($uploadDir, 0777, true);
+        }
+
         // Handle Image Upload if any
         $imageUrl = null;
         $img = $this->request->getFile('image');
         if ($img && $img->isValid() && !$img->hasMoved()) {
             $newName = $img->getRandomName();
-            $img->move(FCPATH . 'uploads/questions', $newName);
+            $img->move($uploadDir, $newName);
             $imageUrl = base_url('uploads/questions/' . $newName);
         }
+
+        // Handle Image Deletion request
+        $removeImage = $this->request->getPost('remove_image');
 
         $now = date('Y-m-d H:i:s');
 
@@ -388,9 +489,15 @@ class Soal extends BaseController
                 'discussion'      => $discussion,
                 'updated_at'      => $now,
             ];
+            if ($qNumber) {
+                $dataUpdate['question_number'] = (int) $qNumber;
+            }
             if ($imageUrl) {
                 $dataUpdate['image_url'] = $imageUrl;
+            } elseif ($removeImage) {
+                $dataUpdate['image_url'] = null;
             }
+
             $this->questionModel->update($questionId, $dataUpdate);
 
             // Update options if multiple choice
@@ -414,8 +521,12 @@ class Soal extends BaseController
             }
             return redirect()->back()->with('success', 'Soal berhasil diperbarui!');
         } else {
-            $highestNum = $this->questionModel->where('package_id', $packageId)->selectMax('question_number')->first();
-            $qNum = ($highestNum['question_number'] ?? 0) + 1;
+            if ($qNumber) {
+                $qNum = (int) $qNumber;
+            } else {
+                $highestNum = $this->questionModel->where('package_id', $packageId)->selectMax('question_number')->first();
+                $qNum = ($highestNum['question_number'] ?? 0) + 1;
+            }
 
             $newQId = $this->questionModel->insert([
                 'package_id'      => $packageId,
@@ -451,11 +562,14 @@ class Soal extends BaseController
         }
     }
 
-    // Delete Question
+    // Delete Question (Supports GET or POST)
     public function deleteQuestion($id)
     {
         $question = $this->questionModel->find($id);
         if ($question) {
+            if (!$this->checkPackagePermission($question['package_id'])) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki hak akses untuk menghapus soal ini.');
+            }
             $this->optionModel->where('question_id', $id)->delete();
             $this->questionModel->delete($id);
             return redirect()->back()->with('success', 'Soal berhasil dihapus.');
@@ -472,6 +586,10 @@ class Soal extends BaseController
             return redirect()->back()->with('error', 'Soal tidak ditemukan.');
         }
 
+        if (!$this->checkPackagePermission($question['package_id'])) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses.');
+        }
+
         $category = $this->categoryModel->where('package_id', $question['package_id'])->where('code', $targetCatCode)->first();
         if ($category) {
             $this->questionModel->update($questionId, ['category_id' => $category['id']]);
@@ -481,10 +599,74 @@ class Soal extends BaseController
         return redirect()->back()->with('error', 'Kategori tujuan tidak valid.');
     }
 
+    // Save Category (Add or Edit)
+    public function saveCategory()
+    {
+        $packageId = $this->request->getPost('package_id');
+        if (!$this->checkPackagePermission($packageId)) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses ke paket ini.');
+        }
+
+        $categoryId = $this->request->getPost('category_id');
+        $code       = strtoupper(trim($this->request->getPost('code') ?? 'TWK'));
+        $name       = trim($this->request->getPost('name') ?? $code);
+        $maxScore   = (int) ($this->request->getPost('max_score') ?? 100);
+        $rule       = trim($this->request->getPost('scoring_rule') ?? 'Standard');
+
+        if (empty($code)) {
+            return redirect()->back()->with('error', 'Kode kategori tidak boleh kosong.');
+        }
+
+        if ($categoryId) {
+            $this->categoryModel->update($categoryId, [
+                'code'         => $code,
+                'name'         => $name,
+                'max_score'    => $maxScore,
+                'scoring_rule' => $rule,
+            ]);
+            return redirect()->back()->with('success', "Kategori {$code} berhasil diperbarui!");
+        } else {
+            $this->categoryModel->insert([
+                'package_id'   => $packageId,
+                'code'         => $code,
+                'name'         => $name,
+                'is_active'    => 1,
+                'max_score'    => $maxScore,
+                'scoring_rule' => $rule,
+            ]);
+            return redirect()->back()->with('success', "Kategori {$code} berhasil ditambahkan!");
+        }
+    }
+
+    // Delete Category
+    public function deleteCategory($id)
+    {
+        $cat = $this->categoryModel->find($id);
+        if (!$cat) {
+            return redirect()->back()->with('error', 'Kategori tidak ditemukan.');
+        }
+        if (!$this->checkPackagePermission($cat['package_id'])) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses.');
+        }
+
+        // Check if there are questions in this category
+        $qCount = $this->questionModel->where('category_id', $id)->countAllResults();
+        if ($qCount > 0) {
+            return redirect()->back()->with('error', "Kategori {$cat['code']} tidak dapat dihapus karena masih digunakan oleh {$qCount} butir soal.");
+        }
+
+        $this->categoryModel->delete($id);
+        return redirect()->back()->with('success', "Kategori {$cat['code']} berhasil dihapus.");
+    }
+
     // Save Scoring Settings (Formula & Weights)
     public function saveScoring()
     {
         $packageId   = $this->request->getPost('package_id');
+        if (!$this->checkPackagePermission($packageId)) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki hak akses ke paket ini.');
+        }
+
         $twkEnabled  = $this->request->getPost('twk_enabled') ? 1 : 0;
         $tiuEnabled  = $this->request->getPost('tiu_enabled') ? 1 : 0;
         $tkpEnabled  = $this->request->getPost('tkp_enabled') ? 1 : 0;

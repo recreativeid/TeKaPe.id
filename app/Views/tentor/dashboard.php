@@ -77,11 +77,53 @@
       </a>
       <span style="font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-        Dilindungi verifikasi password sekunder
+        Dilindungi verifikasi password akun Anda
       </span>
     </div>
 
-    <!-- CARD 2: Profil & Akun -->
+    <!-- CARD 2: Jadwal Bimbel Online & Private -->
+    <div class="card" style="padding: 18px; border-left: 4px solid var(--soft-sage-green);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: #ECFDF5; color: var(--soft-sage-green); display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          </div>
+          <div>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
+              Jadwal Bimbel Saya
+            </h3>
+            <p style="font-size: 12px; color: var(--text-muted);">
+              Jadwalkan kelas bimbel private / reguler (Google Meet & Zoom)
+            </p>
+          </div>
+        </div>
+      </div>
+      <a href="<?= base_url('tentor/jadwal') ?>" class="btn btn-secondary" style="height: 40px; font-size: 12px; margin-top: 12px;">
+        Kelola Jadwal Bimbel &rarr;
+      </a>
+    </div>
+
+    <!-- CARD 3: Database Murid & Pantau Nilai Siswa -->
+    <div class="card" style="padding: 18px; border-left: 4px solid var(--warm-amber);">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <div style="width: 40px; height: 40px; border-radius: 12px; background: #FFFBEB; color: var(--warm-amber); display: flex; align-items: center; justify-content: center;">
+            <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          </div>
+          <div>
+            <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
+              Murid & Nilai Siswa
+            </h3>
+            <p style="font-size: 12px; color: var(--text-muted);">
+              Lihat database murid bimbel dan pantau hasil nilai try out siswa
+            </p>
+          </div>
+        </div>
+      </div>
+      <a href="<?= base_url('tentor/murid') ?>" class="btn btn-secondary" style="height: 40px; font-size: 12px; margin-top: 12px;">
+        Buka Data Murid & Nilai &rarr;
+      </a>
+    </div>
     <div class="card" style="padding: 18px;">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div style="display: flex; align-items: center; gap: 12px;">

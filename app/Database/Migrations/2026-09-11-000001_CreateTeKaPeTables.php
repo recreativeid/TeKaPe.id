@@ -432,6 +432,11 @@ class CreateTeKaPeTables extends Migration
                 'type'       => 'VARCHAR',
                 'constraint' => 50, // 'TWK', 'TIU', 'TKP'
             ],
+            'tentor_id' => [
+                'type'       => 'INTEGER',
+                'constraint' => 11,
+                'null'       => true,
+            ],
             'day' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 20, // 'Senin', 'Selasa', ...

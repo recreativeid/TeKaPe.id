@@ -33,6 +33,8 @@ $routes->group('auth', function ($routes) {
     $routes->post('register', 'Auth::processRegister');
     $routes->get('verify-password', 'Auth::verifyPassword');
     $routes->post('verify-password', 'Auth::processVerifyPassword');
+    $routes->get('verifyPassword', 'Auth::verifyPassword');
+    $routes->post('verifyPassword', 'Auth::processVerifyPassword');
     $routes->get('logout', 'Auth::logout');
 });
 
@@ -66,14 +68,20 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
         // CRUD Endpoints
         $routes->post('save-package', 'Admin\Soal::savePackage');
         $routes->post('update-package/(:num)', 'Admin\Soal::updatePackage/$1');
-        $routes->post('delete-package/(:num)', 'Admin\Soal::deletePackage/$1');
+        $routes->match(['get', 'post'], 'delete-package/(:num)', 'Admin\Soal::deletePackage/$1');
+        $routes->match(['get', 'post'], 'deletePackage/(:num)', 'Admin\Soal::deletePackage/$1');
+        $routes->get('get-question/(:num)', 'Admin\Soal::getQuestionJson/$1');
         $routes->post('save-question', 'Admin\Soal::saveQuestion');
         $routes->post('update-question/(:num)', 'Admin\Soal::updateQuestion/$1');
-        $routes->post('delete-question/(:num)', 'Admin\Soal::deleteQuestion/$1');
+        $routes->match(['get', 'post'], 'delete-question/(:num)', 'Admin\Soal::deleteQuestion/$1');
+        $routes->match(['get', 'post'], 'deleteQuestion/(:num)', 'Admin\Soal::deleteQuestion/$1');
         $routes->post('upload-image', 'Admin\Soal::uploadQuestionImage');
         $routes->post('save-scoring', 'Admin\Soal::saveScoring');
         $routes->post('save-category', 'Admin\Soal::saveCategory');
-        $routes->post('delete-category/(:num)', 'Admin\Soal::deleteCategory/$1');
+        $routes->match(['get', 'post'], 'delete-category/(:num)', 'Admin\Soal::deleteCategory/$1');
+        $routes->match(['get', 'post'], 'deleteCategory/(:num)', 'Admin\Soal::deleteCategory/$1');
+        $routes->post('move-question-category/(:num)', 'Admin\Soal::moveQuestionCategory/$1');
+        $routes->post('moveQuestionCategory/(:num)', 'Admin\Soal::moveQuestionCategory/$1');
     });
 
     // Data Murid
@@ -148,14 +156,34 @@ $routes->group('tentor', ['filter' => 'tentor'], function ($routes) {
         // CRUD Endpoints
         $routes->post('save-package', 'Tentor\Soal::savePackage');
         $routes->post('update-package/(:num)', 'Tentor\Soal::updatePackage/$1');
-        $routes->post('delete-package/(:num)', 'Tentor\Soal::deletePackage/$1');
+        $routes->match(['get', 'post'], 'delete-package/(:num)', 'Tentor\Soal::deletePackage/$1');
+        $routes->match(['get', 'post'], 'deletePackage/(:num)', 'Tentor\Soal::deletePackage/$1');
+        $routes->get('get-question/(:num)', 'Tentor\Soal::getQuestionJson/$1');
         $routes->post('save-question', 'Tentor\Soal::saveQuestion');
         $routes->post('update-question/(:num)', 'Tentor\Soal::updateQuestion/$1');
-        $routes->post('delete-question/(:num)', 'Tentor\Soal::deleteQuestion/$1');
+        $routes->match(['get', 'post'], 'delete-question/(:num)', 'Tentor\Soal::deleteQuestion/$1');
+        $routes->match(['get', 'post'], 'deleteQuestion/(:num)', 'Tentor\Soal::deleteQuestion/$1');
         $routes->post('upload-image', 'Tentor\Soal::uploadQuestionImage');
         $routes->post('save-scoring', 'Tentor\Soal::saveScoring');
         $routes->post('save-category', 'Tentor\Soal::saveCategory');
-        $routes->post('delete-category/(:num)', 'Tentor\Soal::deleteCategory/$1');
+        $routes->match(['get', 'post'], 'delete-category/(:num)', 'Tentor\Soal::deleteCategory/$1');
+        $routes->match(['get', 'post'], 'deleteCategory/(:num)', 'Tentor\Soal::deleteCategory/$1');
+        $routes->post('move-question-category/(:num)', 'Tentor\Soal::moveQuestionCategory/$1');
+        $routes->post('moveQuestionCategory/(:num)', 'Tentor\Soal::moveQuestionCategory/$1');
+    });
+
+    // Kelola Jadwal Bimbel Tentor
+    $routes->group('jadwal', function ($routes) {
+        $routes->get('/', 'Tentor\Jadwal::index');
+        $routes->post('tambah', 'Tentor\Jadwal::save');
+        $routes->post('update/(:num)', 'Tentor\Jadwal::update/$1');
+        $routes->match(['get', 'post'], 'delete/(:num)', 'Tentor\Jadwal::delete/$1');
+    });
+
+    // Data Murid & Nilai Tentor
+    $routes->group('murid', function ($routes) {
+        $routes->get('/', 'Tentor\Murid::index');
+        $routes->get('nilai', 'Tentor\Murid::nilai');
     });
 
     // Profil & Ubah Password Tentor
