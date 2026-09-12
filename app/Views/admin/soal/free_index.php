@@ -16,6 +16,21 @@
     </div>
   </div>
 
+  <!-- Admin Tentor Filter -->
+  <?php if ($rolePrefix === 'admin' && !empty($tentors)): ?>
+    <div class="card" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #F8FAFC;">
+      <span style="font-size: 12px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
+      <select onchange="location.href='<?= base_url("admin/soal/free") ?>?tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px; max-width: 250px;">
+        <option value="">-- Semua Guru / Tentor --</option>
+        <?php foreach ($tentors as $t): ?>
+          <option value="<?= $t['id'] ?>" <?= (($selectedTentorId ?? null) == $t['id']) ? 'selected' : '' ?>>
+            <?= esc($t['name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  <?php endif; ?>
+
   <!-- Exactly THREE Main Action Cards -->
   <div style="display: flex; flex-direction: column; gap: 12px;">
 

@@ -22,10 +22,24 @@
     </form>
 
     <div style="display: flex; gap: 6px; overflow-x: auto;">
-      <a href="<?= base_url('admin/murid/nilai') ?>" class="day-pill <?= empty($type) ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Semua</a>
-      <a href="<?= base_url('admin/murid/nilai?type=free') ?>" class="day-pill <?= $type === 'free' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Free</a>
-      <a href="<?= base_url('admin/murid/nilai?type=premium') ?>" class="day-pill <?= $type === 'premium' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Premium</a>
+      <a href="<?= base_url('admin/murid/nilai' . ($selectedTentorId ? "?tentor_id={$selectedTentorId}" : '')) ?>" class="day-pill <?= empty($type) ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Semua Paket</a>
+      <a href="<?= base_url('admin/murid/nilai?type=free' . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '')) ?>" class="day-pill <?= $type === 'free' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Free</a>
+      <a href="<?= base_url('admin/murid/nilai?type=premium' . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '')) ?>" class="day-pill <?= $type === 'premium' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Premium</a>
     </div>
+
+    <?php if (!empty($tentors)): ?>
+      <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 8px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
+        <select onchange="location.href='<?= base_url('admin/murid/nilai?type=' . esc($type ?? '') . ($search ? '&q=' . esc($search) : '')) ?>&tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px;">
+          <option value="">-- Semua Guru / Tentor --</option>
+          <?php foreach ($tentors as $t): ?>
+            <option value="<?= $t['id'] ?>" <?= ($selectedTentorId == $t['id']) ? 'selected' : '' ?>>
+              <?= esc($t['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+    <?php endif; ?>
   </div>
 
   <!-- Tryout Results List -->
@@ -39,8 +53,11 @@
               <h3 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy);">
                 <?= esc($res['student_name']) ?>
               </h3>
-              <span style="font-size: 12px; color: var(--text-muted);">
+              <span style="font-size: 12px; color: var(--text-muted); display: block;">
                 <?= esc($res['package_title']) ?>
+              </span>
+              <span style="font-size: 10px; color: var(--warm-amber); font-weight: 600;">
+                Pembuat Paket: <?= esc($res['author_name'] ?? 'Admin') ?>
               </span>
             </div>
 

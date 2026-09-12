@@ -17,15 +17,19 @@ class TryoutModel extends Model
     ];
     protected $useTimestamps    = false;
 
-    public function getTryoutResultsWithDetails($packageType = null, $search = null)
+    public function getTryoutResultsWithDetails($packageType = null, $search = null, $tentorId = null)
     {
         $builder = $this->db->table('tryout_sessions ts');
-        $builder->select('ts.*, u.name as student_name, u.username as student_username, p.title as package_title, p.type as package_type');
+        $builder->select('ts.*, u.name as student_name, u.username as student_username, p.title as package_title, p.type as package_type, p.created_by, tentor.name as author_name');
         $builder->join('users u', 'u.id = ts.user_id', 'inner');
         $builder->join('packages p', 'p.id = ts.package_id', 'inner');
+        $builder->join('users tentor', 'tentor.id = p.created_by', 'left');
 
         if ($packageType) {
             $builder->where('p.type', $packageType);
+        }
+        if ($tentorId !== null) {
+            $builder->where('p.created_by', $tentorId);
         }
         if ($search) {
             $builder->groupStart()
@@ -36,6 +40,24 @@ class TryoutModel extends Model
         }
 
         $builder->orderBy('ts.id', 'DESC');
+        return $builder->get()->getResultArray();
+    }
+
+    public function getLeaderboard($tentorId = null, $limit = 30)
+    {
+        $builder = $this->db->table('tryout_sessions ts');
+        $builder->select('ts.*, u.name as student_name, u.username as student_username, p.title as package_title, p.type as package_type');
+        $builder->join('users u', 'u.id = ts.user_id', 'inner');
+        $builder->join('packages p', 'p.id = ts.package_id', 'inner');
+
+        if ($tentorId !== null) {
+            $builder->where('p.created_by', $tentorId);
+        }
+
+        $builder->orderBy('ts.final_score', 'DESC');
+        $builder->orderBy('ts.duration_seconds', 'ASC');
+        $builder->limit($limit);
+
         return $builder->get()->getResultArray();
     }
 

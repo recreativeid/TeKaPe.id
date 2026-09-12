@@ -23,12 +23,31 @@ class Dashboard extends BaseController
     // Prompt 37 — Dashboard Guru / Tentor
     public function index()
     {
-        $tentorId = session()->get('user_id');
+        $tentorId = (int) session()->get('user_id');
         $tentor   = $this->userModel->find($tentorId);
 
-        $totalPackages  = $this->packageModel->countAllResults();
-        $totalQuestions = $this->questionModel->countAllResults();
-        $recentPackages = $this->packageModel->orderBy('created_at', 'DESC')->findAll(3);
+        // Filter packages by this tentor
+        $myPackages = $this->packageModel->where('created_by', $tentorId)->findAll();
+        $totalPackages = count($myPackages);
+
+        $packageIds = array_column($myPackages, 'id');
+        $totalQuestions = 0;
+        if (!empty($packageIds)) {
+            $totalQuestions = $this->questionModel->whereIn('package_id', $packageIds)->countAllResults();
+        }
+
+        // Schedules for this tentor
+        $db = \Config\Database::connect();
+        $totalSchedules = $db->table('schedules')->where('tentor_id', $tentorId)->countAllResults();
+
+        // Students mentored or taking tryouts
+        $myStudents = $this->userModel->getStudents($tentorId);
+        $totalStudents = count($myStudents);
+
+        $recentPackages = $this->packageModel
+            ->where('created_by', $tentorId)
+            ->orderBy('created_at', 'DESC')
+            ->findAll(3);
 
         return view('tentor/dashboard', [
             'title'          => 'Dashboard Tentor - TeKaPe.id',
@@ -36,6 +55,8 @@ class Dashboard extends BaseController
             'tentor'         => $tentor,
             'totalPackages'  => $totalPackages,
             'totalQuestions' => $totalQuestions,
+            'totalSchedules' => $totalSchedules,
+            'totalStudents'  => $totalStudents,
             'recentPackages' => $recentPackages,
         ]);
     }

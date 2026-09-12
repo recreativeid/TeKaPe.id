@@ -10,17 +10,17 @@
     </a>
     <div>
       <h1 class="page-title">Data Murid & Nilai Siswa</h1>
-      <p class="page-subtitle">Pantau kemajuan belajar dan hasil pengerjaan try out siswa</p>
+      <p class="page-subtitle">Khusus murid bimbingan & peserta try out <strong><?= esc($tentorName ?? 'Tentor') ?></strong></p>
     </div>
   </div>
 
   <!-- Segmented Tab Navigation -->
   <div class="segmented-control" style="background: #E2E8F0; padding: 4px; border-radius: var(--radius-md); display: flex;">
     <button type="button" id="tab-btn-nilai" class="btn btn-sm" onclick="switchTab('nilai')" style="flex: 1; border-radius: var(--radius-sm); font-weight: 700; background: #FFFFFF; color: var(--dark-navy); box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-      Hasil & Nilai Siswa
+      Hasil & Nilai Siswa (<?= count($tryoutResults) ?>)
     </button>
     <button type="button" id="tab-btn-database" class="btn btn-sm" onclick="switchTab('database')" style="flex: 1; border-radius: var(--radius-sm); font-weight: 700; background: transparent; color: var(--text-muted);">
-      Database Murid (<?= count($students) ?>)
+      Murid Bimbingan (<?= count($students) ?>)
     </button>
   </div>
 
@@ -28,20 +28,24 @@
   <div id="section-nilai" style="display: flex; flex-direction: column; gap: 12px;">
     <div class="card" style="padding: 16px;">
       <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin-bottom: 4px;">
-        Nilai Try Out Siswa Terbaru
+        Nilai Try Out Siswa pada Paket Soal Anda
       </h2>
       <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-        Hasil pengerjaan paket soal TWK, TIU, dan TKP oleh para siswa.
+        Hasil pengerjaan paket soal yang Anda buat oleh para siswa.
       </p>
 
       <div style="display: flex; flex-direction: column; gap: 8px;">
         <?php if (!empty($tryoutResults)): ?>
           <?php foreach ($tryoutResults as $res): ?>
+            <?php 
+              $finalScore = $res['final_score'] ?? $res['total_score'] ?? 0;
+              $isPassed = !empty($res['is_passed']) || ($finalScore >= 300);
+            ?>
             <div style="background: #F8FAFC; border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 12px; display: flex; flex-direction: column; gap: 6px;">
               <div style="display: flex; align-items: center; justify-content: space-between;">
                 <strong style="font-size: 14px; color: var(--dark-navy);"><?= esc($res['student_name']) ?></strong>
-                <span class="badge <?= $res['is_passed'] ? 'badge-sage' : 'badge-peach' ?>" style="font-size: 10px;">
-                  <?= $res['is_passed'] ? 'Lulus PG' : 'Belum Lulus' ?>
+                <span class="badge <?= $isPassed ? 'badge-sage' : 'badge-peach' ?>" style="font-size: 10px;">
+                  <?= $isPassed ? 'Lulus PG' : 'Belum Lulus' ?>
                 </span>
               </div>
 
@@ -52,19 +56,19 @@
               <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: #FFFFFF; padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border-light); font-size: 11px; text-align: center; margin-top: 4px;">
                 <div>
                   <span style="color: var(--text-muted); display: block; font-size: 10px;">TWK</span>
-                  <strong><?= $res['twk_score'] ?></strong>
+                  <strong><?= $res['twk_score'] ?? 0 ?></strong>
                 </div>
                 <div>
                   <span style="color: var(--text-muted); display: block; font-size: 10px;">TIU</span>
-                  <strong><?= $res['tiu_score'] ?></strong>
+                  <strong><?= $res['tiu_score'] ?? 0 ?></strong>
                 </div>
                 <div>
                   <span style="color: var(--text-muted); display: block; font-size: 10px;">TKP</span>
-                  <strong><?= $res['tkp_score'] ?></strong>
+                  <strong><?= $res['tkp_score'] ?? 0 ?></strong>
                 </div>
                 <div>
                   <span style="color: var(--warm-amber); display: block; font-size: 10px; font-weight: 700;">TOTAL</span>
-                  <strong style="color: var(--warm-amber);"><?= $res['total_score'] ?></strong>
+                  <strong style="color: var(--warm-amber);"><?= $finalScore ?></strong>
                 </div>
               </div>
             </div>

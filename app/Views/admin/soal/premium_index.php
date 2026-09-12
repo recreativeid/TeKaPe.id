@@ -12,18 +12,39 @@
     </a>
     <div>
       <h1 class="page-title">Paket Soal Premium</h1>
-      <p class="page-subtitle">Kelola paket soal khusus murid dengan akses berlangganan.</p>
+      <p class="page-subtitle">Katalog try out khusus murid dengan akses langganan All-Access Kedinasan.</p>
     </div>
   </div>
 
-  <!-- Compact Premium Status Section -->
+  <!-- Admin Tentor Filter -->
+  <?php if ($rolePrefix === 'admin' && !empty($tentors)): ?>
+    <div class="card" style="padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #F8FAFC;">
+      <span style="font-size: 12px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
+      <select onchange="location.href='<?= base_url("admin/soal/premium") ?>?tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px; max-width: 250px;">
+        <option value="">-- Semua Guru / Tentor --</option>
+        <?php foreach ($tentors as $t): ?>
+          <option value="<?= $t['id'] ?>" <?= (($selectedTentorId ?? null) == $t['id']) ? 'selected' : '' ?>>
+            <?= esc($t['name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  <?php endif; ?>
+
+  <!-- Compact Premium Status Section (All-Access Subscription Info) -->
   <div class="card" style="background: linear-gradient(180deg, #FFFFFF 0%, #FFFBEB 100%); border-color: #FDE68A; padding: 16px;">
-    <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--warm-amber);">
-      Status Layanan Premium
-    </span>
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px;">
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+      <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--warm-amber);">
+        Membership Kedinasan All-Access
+      </span>
+      <span class="badge badge-amber" style="font-size: 10px;">Bukan Bayar Per Paket</span>
+    </div>
+    <p style="font-size: 12px; color: #78350F; margin: 4px 0 8px 0; line-height: 1.4;">
+      Sistem langganan premium membuka <strong>seluruh paket try out premium</strong> sekaligus bagi murid. Murid tidak perlu membayar per paket secara terpisah.
+    </p>
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; border-top: 1px solid #FEF3C7; padding-top: 8px;">
       <div style="display: flex; flex-direction: column;">
-        <span style="font-size: 11px; color: var(--text-muted);">Harga Standar</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Biaya Langganan</span>
         <strong style="font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--dark-navy);">Rp <?= number_format($premiumPrice, 0, ',', '.') ?></strong>
       </div>
       <div style="display: flex; flex-direction: column;">
@@ -31,7 +52,7 @@
         <strong style="font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--dark-navy);"><?= esc($premiumDuration) ?> Hari</strong>
       </div>
       <div style="display: flex; flex-direction: column;">
-        <span style="font-size: 11px; color: var(--text-muted);">Paket Aktif</span>
+        <span style="font-size: 11px; color: var(--text-muted);">Paket Tersedia</span>
         <strong style="font-family: 'Outfit', sans-serif; font-size: 15px; color: var(--warm-amber);"><?= esc($activeCount) ?> Paket</strong>
       </div>
     </div>
@@ -47,7 +68,7 @@
           Tambah Paket
         </h2>
         <p style="font-size: 13px; color: var(--text-muted);">
-          Buat paket try out Premium baru dengan harga dan durasi khusus.
+          Buat paket try out Premium baru yang otomatis terbuka bagi seluruh murid berlangganan.
         </p>
       </div>
       <a href="<?= base_url("{$rolePrefix}/soal/premium/tambah") ?>" class="btn btn-amber" style="height: 44px; font-size: 13px;">

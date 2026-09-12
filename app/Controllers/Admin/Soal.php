@@ -31,7 +31,11 @@ class Soal extends BaseController
 
     protected function getTentorFilter()
     {
-        return session()->get('user_role') === 'tentor' ? (int) session()->get('user_id') : null;
+        if (session()->get('user_role') === 'tentor') {
+            return (int) session()->get('user_id');
+        }
+        $selected = $this->request->getGet('tentor_id');
+        return !empty($selected) ? (int) $selected : null;
     }
 
     protected function checkPackagePermission($packageId)
@@ -64,12 +68,16 @@ class Soal extends BaseController
     public function free()
     {
         $packages = $this->packageModel->getPackagesWithType('free', $this->getTentorFilter());
+        $userModel = new \App\Models\UserModel();
+        $tentors   = $userModel->getTentors();
 
         return view('admin/soal/free_index', [
-            'title'     => 'Paket Soal Free - TeKaPe.id',
-            'activeNav' => 'soal',
-            'packages'  => $packages,
-            'role'      => session()->get('user_role'),
+            'title'            => 'Paket Soal Free - TeKaPe.id',
+            'activeNav'        => 'soal',
+            'packages'         => $packages,
+            'tentors'          => $tentors,
+            'selectedTentorId' => $this->getTentorFilter(),
+            'role'             => session()->get('user_role'),
         ]);
     }
 
@@ -155,17 +163,21 @@ class Soal extends BaseController
     // Prompt 08 — Paket Premium Action Selector
     public function premium()
     {
-        $packages = $this->packageModel->getPackagesWithType('premium', $this->getTentorFilter());
-        $settings = $this->settingModel->getMap();
+        $packages  = $this->packageModel->getPackagesWithType('premium', $this->getTentorFilter());
+        $settings  = $this->settingModel->getMap();
+        $userModel = new \App\Models\UserModel();
+        $tentors   = $userModel->getTentors();
 
         return view('admin/soal/premium_index', [
-            'title'           => 'Paket Soal Premium - TeKaPe.id',
-            'activeNav'       => 'soal',
-            'packages'        => $packages,
-            'premiumPrice'    => $settings['premium_price'] ?? '149000',
-            'premiumDuration' => $settings['premium_duration_days'] ?? '30',
-            'activeCount'     => count($packages),
-            'role'            => session()->get('user_role'),
+            'title'            => 'Paket Soal Premium - TeKaPe.id',
+            'activeNav'        => 'soal',
+            'packages'         => $packages,
+            'premiumPrice'     => $settings['premium_price'] ?? '149000',
+            'premiumDuration'  => $settings['premium_duration_days'] ?? '30',
+            'activeCount'      => count($packages),
+            'tentors'          => $tentors,
+            'selectedTentorId' => $this->getTentorFilter(),
+            'role'             => session()->get('user_role'),
         ]);
     }
 

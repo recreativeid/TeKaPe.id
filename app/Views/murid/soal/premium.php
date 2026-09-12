@@ -19,15 +19,15 @@
     <div class="card" style="padding: 16px; border-color: var(--soft-sage-border); background: var(--soft-sage-bg);">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div>
-          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #065F46;">Status Langganan</span>
+          <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #065F46;">Status Membership</span>
           <h2 style="font-family: 'Outfit', sans-serif; font-size: 16px; font-weight: 700; color: var(--dark-navy); margin-top: 2px;">
-            Akses Premium Aktif
+            Akses All-Access Premium Aktif
           </h2>
           <span style="font-size: 12px; color: var(--text-muted);">
-            Berlaku hingga: <strong><?= date('d M Y', strtotime($expiryDate)) ?></strong>
+            Bebas akses seluruh paket hingga: <strong><?= date('d M Y', strtotime($expiryDate)) ?></strong>
           </span>
         </div>
-        <span class="badge badge-sage" style="font-size: 11px;">Aktif</span>
+        <span class="badge badge-sage" style="font-size: 11px;">✓ All Unlocked</span>
       </div>
     </div>
   <?php else: ?>
@@ -39,14 +39,14 @@
             Akses Masih Terkunci
           </h2>
           <span style="font-size: 12px; color: var(--text-muted);">
-            Aktifkan Premium untuk membuka seluruh paket Try Out CAT akurat.
+            Cukup 1x aktivasi untuk membuka <strong>semua paket try out CAT Kedinasan</strong> sekaligus (tidak perlu bayar per paket).
           </span>
         </div>
-        <span class="badge badge-peach" style="font-size: 11px;">Terkunci</span>
+        <span class="badge badge-peach" style="font-size: 11px;">🔒 Terkunci</span>
       </div>
 
       <a href="<?= base_url('murid/payment') ?>" class="btn btn-amber" style="height: 42px; font-size: 13px;">
-        Berlangganan Premium Sekarang &rarr;
+        Buka Akses Semua Paket Premium Sekarang &rarr;
       </a>
     </div>
   <?php endif; ?>

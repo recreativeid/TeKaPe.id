@@ -28,3 +28,6 @@
 
 # Composer
 /vendor/
+
+# Scratch files
+scratch/

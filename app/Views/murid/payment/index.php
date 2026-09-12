@@ -28,18 +28,18 @@
         <h2 style="font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; color: var(--dark-navy);">
           Rp <?= number_format($price, 0, ',', '.') ?>
         </h2>
-        <span style="font-size: 12px; color: var(--text-muted);">Sekali bayar untuk 30 hari akses tanpa perpanjangan otomatis paksa.</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Sekali bayar untuk <?= esc($duration) ?> hari akses bebas ke <strong>seluruh paket try out Kedinasan</strong> (bukan bayar per paket).</span>
       </div>
 
       <!-- Benefits List -->
       <div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #FEF3C7; padding-top: 12px; font-size: 13px; color: var(--dark-navy);">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="color: var(--soft-sage-green); font-weight: 800;">✓</span>
-          <span>Akses seluruh paket soal Premium</span>
+          <span>Bebas akses seluruh paket Try Out Premium (TWK, TIU, TKP)</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="color: var(--soft-sage-green); font-weight: 800;">✓</span>
-          <span>Latihan lebih lengkap berstandar CAT BKN</span>
+          <span>Tidak perlu bayar lagi untuk setiap paket soal baru</span>
         </div>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="color: var(--soft-sage-green); font-weight: 800;">✓</span>

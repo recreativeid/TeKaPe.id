@@ -47,8 +47,10 @@ class Murid extends BaseController
     {
         $search = $this->request->getGet('q');
         $filter = $this->request->getGet('filter') ?? 'semua';
+        $tentorId = $this->request->getGet('tentor_id') ? (int) $this->request->getGet('tentor_id') : null;
 
-        $students = $this->userModel->getStudents();
+        $students = $this->userModel->getStudents($tentorId);
+        $tentors  = $this->userModel->getTentors();
 
         // Apply filters
         if ($filter === 'premium') {
@@ -70,11 +72,13 @@ class Murid extends BaseController
         }
 
         return view('admin/murid/database', [
-            'title'     => 'Database Murid - TeKaPe.id',
-            'activeNav' => 'murid',
-            'students'  => $students,
-            'search'    => $search,
-            'filter'    => $filter,
+            'title'            => 'Database Murid - TeKaPe.id',
+            'activeNav'        => 'murid',
+            'students'         => $students,
+            'tentors'          => $tentors,
+            'selectedTentorId' => $tentorId,
+            'search'           => $search,
+            'filter'           => $filter,
         ]);
     }
 
@@ -85,6 +89,8 @@ class Murid extends BaseController
         if (!$student) {
             return redirect()->to(base_url('admin/murid/database'))->with('error', 'Murid tidak ditemukan.');
         }
+
+        $tentors = $this->userModel->getTentors();
 
         // Scores summary
         $scores = $this->tryoutModel->where('user_id', $id)->findAll();
@@ -106,6 +112,7 @@ class Murid extends BaseController
             'title'         => 'Detail Murid - ' . esc($student['name']),
             'activeNav'     => 'murid',
             'student'       => $student,
+            'tentors'       => $tentors,
             'latestScore'   => $latestScore,
             'highestScore'  => $highestScore,
             'avgScore'      => $avgScore,
@@ -114,20 +121,47 @@ class Murid extends BaseController
         ]);
     }
 
+    // Assign Tentor Pembimbing
+    public function assignTentor($studentId)
+    {
+        $tentorId = $this->request->getPost('assigned_tentor_id');
+        $tentorId = !empty($tentorId) ? (int) $tentorId : null;
+
+        $db = \Config\Database::connect();
+        $exists = $db->table('students_meta')->where('user_id', $studentId)->get()->getRowArray();
+        if ($exists) {
+            $db->table('students_meta')->where('user_id', $studentId)->update([
+                'assigned_tentor_id' => $tentorId,
+            ]);
+        } else {
+            $db->table('students_meta')->insert([
+                'user_id'            => $studentId,
+                'assigned_tentor_id' => $tentorId,
+                'attendance_rate'    => 90,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Tentor pembimbing berhasil diperbarui!');
+    }
+
     // Prompt 15 — Nilai Try Out
     public function nilai()
     {
-        $search = $this->request->getGet('q');
-        $type = $this->request->getGet('type');
+        $search   = $this->request->getGet('q');
+        $type     = $this->request->getGet('type');
+        $tentorId = $this->request->getGet('tentor_id') ? (int) $this->request->getGet('tentor_id') : null;
 
-        $results = $this->tryoutModel->getTryoutResultsWithDetails($type, $search);
+        $results = $this->tryoutModel->getTryoutResultsWithDetails($type, $search, $tentorId);
+        $tentors = $this->userModel->getTentors();
 
         return view('admin/murid/nilai', [
-            'title'     => 'Nilai Try Out - TeKaPe.id',
-            'activeNav' => 'murid',
-            'results'   => $results,
-            'search'    => $search,
-            'type'      => $type,
+            'title'            => 'Nilai Try Out - TeKaPe.id',
+            'activeNav'        => 'murid',
+            'results'          => $results,
+            'tentors'          => $tentors,
+            'selectedTentorId' => $tentorId,
+            'search'           => $search,
+            'type'             => $type,
         ]);
     }
 

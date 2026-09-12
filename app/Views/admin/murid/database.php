@@ -22,12 +22,26 @@
       <button type="submit" class="btn btn-primary btn-sm" style="height: 40px; width: 68px;">Cari</button>
     </form>
 
-    <!-- Filter Pills -->
+    <!-- Filter Pills & Tentor Filter -->
     <div style="display: flex; gap: 6px; overflow-x: auto; padding-top: 4px;">
-      <a href="<?= base_url('admin/murid/database?filter=semua' . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'semua' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Semua</a>
-      <a href="<?= base_url('admin/murid/database?filter=free' . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'free' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Free</a>
-      <a href="<?= base_url('admin/murid/database?filter=premium' . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'premium' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Premium</a>
+      <a href="<?= base_url('admin/murid/database?filter=semua' . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '') . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'semua' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Semua</a>
+      <a href="<?= base_url('admin/murid/database?filter=free' . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '') . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'free' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Free</a>
+      <a href="<?= base_url('admin/murid/database?filter=premium' . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '') . ($search ? "&q={$search}" : '')) ?>" class="day-pill <?= $filter === 'premium' ? 'active' : '' ?>" style="font-size: 11px; padding: 6px 12px;">Premium</a>
     </div>
+
+    <?php if (!empty($tentors)): ?>
+      <div style="display: flex; align-items: center; gap: 8px; border-top: 1px solid var(--border-light); padding-top: 8px;">
+        <span style="font-size: 11px; font-weight: 700; color: var(--dark-navy); white-space: nowrap;">Filter Guru:</span>
+        <select onchange="location.href='<?= base_url('admin/murid/database?filter=' . esc($filter) . ($search ? '&q=' . esc($search) : '')) ?>&tentor_id=' + this.value" class="form-control" style="height: 36px; font-size: 12px;">
+          <option value="">-- Semua Guru / Tentor --</option>
+          <?php foreach ($tentors as $t): ?>
+            <option value="<?= $t['id'] ?>" <?= ($selectedTentorId == $t['id']) ? 'selected' : '' ?>>
+              <?= esc($t['name']) ?>
+            </option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+    <?php endif; ?>
   </div>
 
   <!-- Student Cards List -->
@@ -42,6 +56,9 @@
               </h3>
               <span style="font-size: 12px; color: var(--text-muted);">
                 @<?= esc($st['username']) ?> • WA: <?= esc($st['phone_whatsapp'] ?? '-') ?>
+              </span>
+              <span style="font-size: 11px; color: var(--warm-amber); font-weight: 600; margin-top: 2px;">
+                👨‍🏫 Pembimbing: <?= esc($st['assigned_tentor_name'] ?? 'Belum Ditentukan') ?>
               </span>
             </div>
 

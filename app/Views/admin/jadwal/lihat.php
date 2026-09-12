@@ -24,14 +24,29 @@
   </div>
 
   <!-- Subject Filter: Semua, TWK, TIU, TKP -->
-  <div style="display: flex; gap: 6px; align-items: center;">
+  <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
     <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Filter Mapel:</span>
     <?php foreach (['Semua', 'TWK', 'TIU', 'TKP'] as $sub): ?>
-      <a href="<?= base_url("admin/jadwal/lihat?day={$selectedDay}&subject={$sub}") ?>" style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-sm); text-decoration: none; <?= $filterSubj === $sub ? 'background: var(--dark-navy); color: #fff;' : 'background: #FFFFFF; color: var(--text-muted); border: 1px solid var(--border-color);' ?>">
+      <a href="<?= base_url("admin/jadwal/lihat?day={$selectedDay}&subject={$sub}" . ($selectedTentorId ? "&tentor_id={$selectedTentorId}" : '')) ?>" style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: var(--radius-sm); text-decoration: none; <?= $filterSubj === $sub ? 'background: var(--dark-navy); color: #fff;' : 'background: #FFFFFF; color: var(--text-muted); border: 1px solid var(--border-color);' ?>">
         <?= $sub ?>
       </a>
     <?php endforeach; ?>
   </div>
+
+  <!-- Tentor Filter for Admin -->
+  <?php if (!empty($tentors)): ?>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <span style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Filter Guru:</span>
+      <select onchange="location.href='<?= base_url("admin/jadwal/lihat?day={$selectedDay}&subject={$filterSubj}") ?>&tentor_id=' + this.value" class="form-control" style="height: 34px; font-size: 12px; max-width: 250px;">
+        <option value="">-- Semua Guru / Tentor --</option>
+        <?php foreach ($tentors as $t): ?>
+          <option value="<?= $t['id'] ?>" <?= (($selectedTentorId ?? null) == $t['id']) ? 'selected' : '' ?>>
+            <?= esc($t['name']) ?>
+          </option>
+        <?php endforeach; ?>
+      </select>
+    </div>
+  <?php endif; ?>
 
   <!-- Schedule Cards -->
   <div style="display: flex; flex-direction: column; gap: 10px;">
@@ -58,6 +73,9 @@
             </h3>
             <p style="font-size: 13px; color: <?= $idx === 0 ? '#CBD5E1' : 'var(--text-muted)' ?>;">
               <?= esc($sc['start_time']) ?> – <?= esc($sc['end_time']) ?> WIB • Hari <?= esc($sc['day']) ?>
+              <?php if (!empty($sc['tentor_name'])): ?>
+                • <strong style="color: <?= $idx === 0 ? '#FDE68A' : 'var(--warm-amber)' ?>;">Pengajar: <?= esc($sc['tentor_name']) ?></strong>
+              <?php endif; ?>
             </p>
           </div>
 

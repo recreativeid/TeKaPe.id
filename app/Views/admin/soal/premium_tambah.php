@@ -40,15 +40,19 @@
         <textarea name="description" class="form-control" rows="2" placeholder="Tuliskan petunjuk khusus pengerjaan paket premium..."></textarea>
       </div>
 
-      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-        <div class="form-group">
-          <label class="form-label">Tarif Layanan (Rp)</label>
-          <input type="number" name="price" class="form-control" value="<?= esc($defaultPrice) ?>" required>
+      <!-- All-Access Subscription Model Notice -->
+      <div style="background: #FFFBEB; border: 1.5px solid #FDE68A; border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; display: flex; gap: 10px; align-items: flex-start;">
+        <div style="color: var(--warm-amber); font-size: 18px; line-height: 1;">⭐</div>
+        <div style="font-size: 12px; color: #92400E; line-height: 1.5;">
+          <strong>Model All-Access Try Out Kedinasan:</strong> Paket soal premium ini tidak dikenakan biaya eceran per paket. Seluruh siswa yang memiliki status <strong>Langganan Premium Aktif</strong> otomatis mendapatkan akses penuh untuk mengerjakan paket ini.
         </div>
-        <div class="form-group">
-          <label class="form-label">Durasi Akses (Hari)</label>
-          <input type="number" name="duration_days" class="form-control" value="<?= esc($defaultDuration) ?>" required>
-        </div>
+      </div>
+
+      <input type="hidden" name="price" value="0">
+      <div class="form-group">
+        <label class="form-label">Durasi Ujian Simulasi CAT (Menit)</label>
+        <input type="number" name="duration_days" class="form-control" value="100" placeholder="100 menit standar CAT BKN" required>
+        <small style="font-size: 11px; color: var(--text-muted);">Alokasi waktu pengerjaan simulasi CAT (standar SKD Kedinasan: 100 menit).</small>
       </div>
 
       <div class="form-group">

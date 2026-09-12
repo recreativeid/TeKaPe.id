@@ -79,6 +79,11 @@ class CreateTeKaPeTables extends Migration
                 'constraint' => 5,
                 'default'    => 92,
             ],
+            'assigned_tentor_id' => [
+                'type'       => 'INTEGER',
+                'constraint' => 11,
+                'null'       => true,
+            ],
         ]);
         $this->forge->addKey('id', true);
         $this->forge->createTable('students_meta', true);

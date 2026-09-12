@@ -22,7 +22,7 @@ class Jadwal extends BaseController
             'Wednesday' => 'Rabu', 'Thursday' => 'Kamis', 'Friday' => 'Jumat', 'Saturday' => 'Sabtu'
         ][date('l')] ?? 'Senin';
 
-        $todayClasses = $this->scheduleModel->where('day', $todayDay)->where('status', 'active')->orderBy('start_time', 'ASC')->findAll();
+        $todayClasses = $this->scheduleModel->getSchedulesWithTentor($todayDay);
 
         return view('admin/jadwal/index', [
             'title'        => 'Kelola Jadwal Bimbel - TeKaPe.id',
@@ -37,19 +37,22 @@ class Jadwal extends BaseController
     {
         $selectedDay = $this->request->getGet('day') ?? 'Senin';
         $filterSubj  = $this->request->getGet('subject') ?? 'Semua';
+        $tentorId    = $this->request->getGet('tentor_id') ? (int) $this->request->getGet('tentor_id') : null;
 
-        $builder = $this->scheduleModel->where('day', $selectedDay);
+        $schedules = $this->scheduleModel->getSchedulesWithTentor($selectedDay, $tentorId);
         if ($filterSubj !== 'Semua') {
-            $builder->where('subject', $filterSubj);
+            $schedules = array_filter($schedules, fn($s) => $s['subject'] === $filterSubj);
         }
-        $schedules = $builder->orderBy('start_time', 'ASC')->findAll();
+        $tentors = (new \App\Models\UserModel())->getTentors();
 
         return view('admin/jadwal/lihat', [
-            'title'       => 'Jadwal Mingguan - TeKaPe.id',
-            'activeNav'   => 'jadwal',
-            'selectedDay' => $selectedDay,
-            'filterSubj'  => $filterSubj,
-            'schedules'   => $schedules,
+            'title'            => 'Jadwal Mingguan - TeKaPe.id',
+            'activeNav'        => 'jadwal',
+            'selectedDay'      => $selectedDay,
+            'filterSubj'       => $filterSubj,
+            'schedules'        => $schedules,
+            'tentors'          => $tentors,
+            'selectedTentorId' => $tentorId,
         ]);
     }
 
@@ -57,17 +60,20 @@ class Jadwal extends BaseController
     public function tambah()
     {
         $existing = $this->scheduleModel->findAll();
+        $tentors  = (new \App\Models\UserModel())->getTentors();
 
         return view('admin/jadwal/tambah', [
             'title'     => 'Tambah Jadwal - TeKaPe.id',
             'activeNav' => 'jadwal',
             'existing'  => $existing,
+            'tentors'   => $tentors,
         ]);
     }
 
     public function saveJadwal()
     {
         $subject   = $this->request->getPost('subject');
+        $tentorId  = $this->request->getPost('tentor_id') ? (int) $this->request->getPost('tentor_id') : null;
         $day       = $this->request->getPost('day');
         $startTime = $this->request->getPost('start_time');
         $endTime   = $this->request->getPost('end_time');
@@ -75,14 +81,15 @@ class Jadwal extends BaseController
         $link      = trim($this->request->getPost('meeting_link') ?? '');
         $status    = $this->request->getPost('status') ?? 'active';
 
-        // Check Conflict
-        $conflict = $this->scheduleModel->checkConflict($day, $startTime, $endTime);
+        // Check Conflict for the same tentor or room
+        $conflict = $this->scheduleModel->checkConflict($day, $startTime, $endTime, null, $tentorId);
         if ($conflict) {
             return redirect()->back()->withInput()->with('error', "Jadwal bentrok dengan kelas {$conflict['subject']} ({$conflict['start_time']}–{$conflict['end_time']}) pada hari {$day}.");
         }
 
         $this->scheduleModel->insert([
             'subject'      => $subject,
+            'tentor_id'    => $tentorId,
             'day'          => $day,
             'start_time'   => $startTime,
             'end_time'     => $endTime,

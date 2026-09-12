@@ -43,9 +43,9 @@
       </div>
 
       <div>
-        <h2 class="large-select-title" style="font-size: 20px;">Paket Premium</h2>
+        <h2 class="large-select-title" style="font-size: 20px;">Paket Premium Kedinasan</h2>
         <p class="large-select-desc" style="margin-top: 4px;">
-          Akses latihan dan Try Out Premium berstandar CAT BKN terbaru lengkap dengan analisis passing grade.
+          Sistem 1x langganan All-Access membuka <strong>seluruh paket try out premium</strong> berstandar CAT BKN lengkap dengan pembahasan dan ranking nasional.
         </p>
       </div>
 

@@ -19,8 +19,9 @@ class Murid extends BaseController
 
     public function index()
     {
-        $students = $this->userModel->getStudents();
-        $tryoutResults = $this->tryoutModel->getLeaderboard(null, 30);
+        $tentorId = (int) session()->get('user_id');
+        $students = $this->userModel->getStudents($tentorId);
+        $tryoutResults = $this->tryoutModel->getLeaderboard($tentorId, 50);
 
         return view('tentor/murid/index', [
             'title'         => 'Database Murid & Nilai - TeKaPe.id',
@@ -28,6 +29,7 @@ class Murid extends BaseController
             'students'      => $students,
             'tryoutResults' => $tryoutResults,
             'role'          => 'tentor',
+            'tentorName'    => session()->get('user_name'),
         ]);
     }
 

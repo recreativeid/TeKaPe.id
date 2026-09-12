@@ -98,6 +98,8 @@ $routes->group('admin', ['filter' => 'admin'], function ($routes) {
         $routes->post('login-siswa/reset-password', 'Admin\Murid::resetPassword');
         $routes->post('toggle-status/(:num)', 'Admin\Murid::toggleStatus/$1');
         $routes->post('grant-premium/(:num)', 'Admin\Murid::grantPremium/$1');
+        $routes->post('assign-tentor/(:num)', 'Admin\Murid::assignTentor/$1');
+        $routes->post('assignTentor/(:num)', 'Admin\Murid::assignTentor/$1');
     });
 
     // Kelola Jadwal Bimbel Online
@@ -216,9 +218,11 @@ $routes->group('murid', ['filter' => 'murid'], function ($routes) {
 
     // Payment Checkout
     $routes->group('payment', function ($routes) {
-        $routes->get('(:num)', 'Murid\Payment::index/$1');
+        $routes->get('/', 'Murid\Payment::index');
+        $routes->get('(:num)', 'Murid\Payment::index');
         $routes->post('process', 'Murid\Payment::process');
-        $routes->get('success/(:num)', 'Murid\Payment::success/$1');
+        $routes->get('success', 'Murid\Payment::success');
+        $routes->get('success/(:num)', 'Murid\Payment::success');
     });
 
     // Jadwal Kelas Online & Absensi

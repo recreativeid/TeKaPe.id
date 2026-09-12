@@ -66,11 +66,42 @@
           <span style="color: var(--text-muted);">No. WhatsApp</span>
           <strong><?= esc($student['phone_whatsapp'] ?? '-') ?></strong>
         </div>
-        <div style="display: flex; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border-light); padding-bottom: 6px;">
           <span style="color: var(--text-muted);">Terdaftar Sejak</span>
           <strong><?= date('d M Y', strtotime($student['created_at'] ?? 'now')) ?></strong>
         </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span style="color: var(--text-muted);">Tentor Pembimbing</span>
+          <strong style="color: var(--warm-amber);"><?= esc($student['assigned_tentor_name'] ?? 'Belum Ditentukan') ?></strong>
+        </div>
       </div>
+    </div>
+
+    <!-- Assigned Tentor Management Card -->
+    <div class="card" style="padding: 18px; gap: 10px;">
+      <h3 style="font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 700; color: var(--dark-navy);">
+        Alokasikan Guru / Tentor Pembimbing
+      </h3>
+      <p style="font-size: 12px; color: var(--text-muted);">
+        Tentukan guru yang bertanggung jawab membimbing dan memantau kemajuan belajar murid ini.
+      </p>
+
+      <form action="<?= base_url("admin/murid/assignTentor/{$student['id']}") ?>" method="post" style="display: flex; gap: 8px;">
+        <?= csrf_field() ?>
+        <select name="assigned_tentor_id" class="form-control" style="height: 40px; font-size: 13px;">
+          <option value="">-- Tanpa Tentor Pembimbing --</option>
+          <?php if (!empty($tentors)): ?>
+            <?php foreach ($tentors as $t): ?>
+              <option value="<?= $t['id'] ?>" <?= (($student['assigned_tentor_id'] ?? null) == $t['id']) ? 'selected' : '' ?>>
+                <?= esc($t['name']) ?>
+              </option>
+            <?php endforeach; ?>
+          <?php endif; ?>
+        </select>
+        <button type="submit" class="btn btn-primary" style="height: 40px; white-space: nowrap; font-size: 12px;">
+          Simpan Alokasi
+        </button>
+      </form>
     </div>
   </div>
 

@@ -169,8 +169,9 @@ class Auth extends BaseController
         $redirect = $this->request->getPost('redirect_target') ?? 'admin/soal';
         $userId   = session()->get('user_id');
 
-        $user = $this->userModel->find($userId);
-        if (!$user) {
+        $db   = \Config\Database::connect();
+        $user = $db->table('users')->where('id', $userId)->get()->getRowArray();
+        if (!$user || !isset($user['password_hash'])) {
             return redirect()->to(base_url('auth/login'));
         }
 
